@@ -1,4 +1,4 @@
-<?php
+<?php namespace XoopsModules\Userlog;
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -31,7 +31,7 @@ use phpbrowscap\Browscap;
 /**
  * Class Userlog
  */
-class Userlog extends \Xmf\Module\Helper
+class Helper extends \Xmf\Module\Helper
 {
     public $logmodule;
     public $user;
@@ -353,7 +353,6 @@ class Userlog extends \Xmf\Module\Helper
 
     /**
      * @return bool
-     * @throws \phpbrowscap\Exception
      */
     private function initBrowsCap()
     {

@@ -1115,7 +1115,7 @@ class UserlogLogHandler extends XoopsPersistableObjectHandler
         $limit = null;
         $start = null;
         $sql   = "SELECT {$select}, COUNT(*) AS count FROM {$this->table}";
-        if (isset($criteria) && is_subclass_of($criteria, 'criteriaelement')) {
+        if (isset($criteria) && is_subclass_of($criteria, 'CriteriaElement')) {
             $sql .= ' ' . $criteria->renderWhere();
             if ($groupby = $criteria->getGroupby()) {
                 $sql .= !strpos($groupby, 'GROUP BY') ? " GROUP BY {$groupby}" : $groupby;

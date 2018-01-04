@@ -24,6 +24,8 @@ use Xmf\Request;
 
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 
+require_once __DIR__ . '/preloads/autoloader.php';
+
 $moduleDirName = basename(__DIR__);
 
 // ------------------- Informations ------------------- //
@@ -477,12 +479,12 @@ if (isset($xoopsOption['pagetype']) && 'admin' === $xoopsOption['pagetype'] && i
 
         // if we are in maintenance - now all modules - how to do it for only one module?
         if ('maintenance' === Request::getString('fct')) {
-           $dump_modules = Request::getBool('dump_modules', false);
-            $dump_tables = Request::getBool('dump_tables',  false);
-        if (true === $dump_tables || true === $dump_modules) {
-            $dirname = $modversion['dirname'];
+            $dump_modules = Request::getBool('dump_modules', false);
+            $dump_tables = Request::getBool('dump_tables', false);
+            if (true === $dump_tables || true === $dump_modules) {
+                $dirname = $modversion['dirname'];
+            }
         }
-    }
     }
     // END if dirname is system
 
