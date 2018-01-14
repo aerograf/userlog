@@ -1,4 +1,5 @@
-<?php
+<?php namespace XoopsModules\Userlog;
+
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -19,21 +20,23 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
+use XoopsModules\Userlog;
+
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 require_once __DIR__ . '/../include/common.php';
 xoops_loadLanguage('admin', USERLOG_DIRNAME);
 
 /**
- * Class UserlogStats
+ * Class Stats
  */
-class UserlogStats extends XoopsObject
+class Stats extends \XoopsObject
 {
     /**
      * @var string
      */
-    public $userlog = null;
-    public $period  = ['all' => 0, 'today' => 1, 'week' => 7, 'month' => 30];
-    public $type    = [
+    public $helper = null;
+    public $period = ['all' => 0, 'today' => 1, 'week' => 7, 'month' => 30];
+    public $type   = [
         'log'      => _AM_USERLOG_STATS_LOG,
         'logdel'   => _AM_USERLOG_STATS_LOGDEL,
         'set'      => _AM_USERLOG_STATS_SET,
@@ -50,7 +53,7 @@ class UserlogStats extends XoopsObject
      */
     public function __construct()
     {
-        $this->userlog = Userlog::getInstance();
+        $this->helper = Userlog\Helper::getInstance();
         $this->initVar('stats_id', XOBJ_DTYPE_INT, null, false);
         $this->initVar('stats_type', XOBJ_DTYPE_TXTBOX, null, false, 10);
         $this->initVar('stats_link', XOBJ_DTYPE_TXTBOX, null, false, 100);
@@ -73,7 +76,7 @@ class UserlogStats extends XoopsObject
     }
 
     /**
-     * @return UserlogStats
+     * @return Stats
      */
     public static function getInstance()
     {
@@ -90,7 +93,7 @@ class UserlogStats extends XoopsObject
      */
     public function time_update()
     {
-        return $this->userlog->formatTime($this->getVar('time_update'));
+        return $this->helper->formatTime($this->getVar('time_update'));
     }
     // $type = null or array() => get all types
 
@@ -110,13 +113,13 @@ class UserlogStats extends XoopsObject
         $limit = 0,
         $sort = 'stats_value',
         $order = 'DESC',
-        $otherCriteria = null
-    ) {
-        $criteria = new CriteriaCompo();
+        $otherCriteria = null)
+    {
+        $criteria = new \CriteriaCompo();
         if (!empty($type)) {
             $typeArr = is_array($type) ? $type : [$type];
             foreach ($typeArr as $tt) {
-                $criteria->add(new Criteria('stats_type', $tt), 'OR');
+                $criteria->add(new \Criteria('stats_type', $tt), 'OR');
             }
         }
         if (!empty($otherCriteria)) {
@@ -126,14 +129,14 @@ class UserlogStats extends XoopsObject
         $criteria->setLimit($limit);
         $criteria->setSort($sort);
         $criteria->setOrder($order);
-        $statsObj = $this->userlog->getHandler('stats')->getAll($criteria);
+        $statsObj = $this->helper->getHandler('stats')->getAll($criteria);
         if (empty($statsObj)) {
             return false;
         } // if no result nothing in database
         foreach ($statsObj as $sObj) {
             $link = $sObj->stats_link();
             // if there is a link and only one type just index link
-            $index1 = (!empty($link) && 1 == count($type)) ? $link : $sObj->stats_type() . $link;
+            $index1 = (!empty($link) && (is_array($type) && 1 == count($type))) ? $link : $sObj->stats_type() . $link;
             $index2 = $sObj->stats_period();
             if (!isset($ret[$index1])) {
                 $ret[$index1] = [];
@@ -156,19 +159,19 @@ class UserlogStats extends XoopsObject
      */
     public function updateAll($type = 'log', $prob = 11)
     {
-        if (!$this->userlog->probCheck($prob)) {
+        if (!$this->helper->probCheck($prob)) {
             return false;
         }
         switch ($type) {
             case 'set':
                 // total
-                $sets = $this->userlog->getHandler('setting')->getCount();
+                $sets = $this->helper->getHandler('setting')->getCount();
                 $this->update('set', 0, $sets);
                 break;
             case 'file':
-                list($allFiles, $totalFiles) = $this->userlog->getAllLogFiles();
+                list($allFiles, $totalFiles) = $this->helper->getAllLogFiles();
                 foreach ($allFiles as $path => $files) {
-                    $log_file = $path . '/' . $this->userlog->getConfig('logfilename') . '.' . $this->userlog->logext;
+                    $log_file = $path . '/' . $this->helper->getConfig('logfilename') . '.' . $this->helper->logext;
                     $this->update('file', 0, count($files), false, $log_file); // update working file in all paths (now 2)
                 }
                 // update all files in db link='all'
@@ -178,21 +181,21 @@ class UserlogStats extends XoopsObject
                 break;
             case 'log':
                 // if logs exceed the maxlogsperiod delete them
-                if (0 != $this->userlog->getConfig('maxlogsperiod')) {
-                    $criteriaDel = new CriteriaCompo();
-                    $until       = time() - $this->userlog->getSinceTime($this->userlog->getConfig('maxlogsperiod'));
-                    $criteriaDel->add(new Criteria('log_time', $until, '<'), 'AND');
+                if (0 != $this->helper->getConfig('maxlogsperiod')) {
+                    $criteriaDel = new \CriteriaCompo();
+                    $until       = time() - $this->helper->getSinceTime($this->helper->getConfig('maxlogsperiod'));
+                    $criteriaDel->add(new \Criteria('log_time', $until, '<'), 'AND');
                     $numDelPeriod = $this->delete('log', 0, 0, $criteriaDel); // all time = maxlogsperiod
                 }
                 foreach ($this->period as $per) {
-                    $criteria = new CriteriaCompo();
+                    $criteria = new \CriteriaCompo();
                     if (!empty($per)) {
                         // today, week, month
-                        $since = $this->userlog->getSinceTime($per);
-                        $criteria->add(new Criteria('log_time', time() - $since, '>'), 'AND');
+                        $since = $this->helper->getSinceTime($per);
+                        $criteria->add(new \Criteria('log_time', time() - $since, '>'), 'AND');
                     }
-                    $logs   = $this->userlog->getHandler('log')->getLogsCount($criteria);
-                    $exceed = $logs - $this->userlog->getConfig('maxlogs');
+                    $logs   = $this->helper->getHandler('log')->getLogsCount($criteria);
+                    $exceed = $logs - $this->helper->getConfig('maxlogs');
                     // if logs exceed the maxlogs delete them
                     if ($exceed > 0) {
                         $numDel = $this->delete('log', $per, $exceed, null, true);
@@ -202,10 +205,10 @@ class UserlogStats extends XoopsObject
                 }
                 break;
             case 'referral':
-                $criteria = new CriteriaCompo();
-                $criteria->add(new Criteria('referer', XOOPS_URL . '%', 'NOT LIKE'));
+                $criteria = new \CriteriaCompo();
+                $criteria->add(new \Criteria('referer', XOOPS_URL . '%', 'NOT LIKE'));
                 $criteria->setGroupBy('referer');
-                $outsideReferers = $this->userlog->getHandler('log')->getCounts($criteria);
+                $outsideReferers = $this->helper->getHandler('log')->getCounts($criteria);
                 $referrals       = [];
                 foreach ($outsideReferers as $ref => $views) {
                     if (empty($ref)) {
@@ -224,16 +227,16 @@ class UserlogStats extends XoopsObject
                 break;
             case 'browser':
             case 'OS':
-                $criteria = new CriteriaCompo();
+                $criteria = new \CriteriaCompo();
                 $criteria->setGroupBy('user_agent');
-                $agents   = $this->userlog->getHandler('log')->getCounts($criteria);
+                $agents   = $this->helper->getHandler('log')->getCounts($criteria);
                 $browsers = [];
                 $OSes     = [];
                 foreach ($agents as $agent => $views) {
                     if (empty($agent)) {
                         continue;
                     }
-                    $browserArr    = $this->userlog->getBrowsCap()->getBrowser($agent, true);
+                    $browserArr    = $this->helper->getBrowsCap()->getBrowser($agent, true);
                     $browserParent = !empty($browserArr['Parent']) ? (!empty($browserArr['Crawler']) ? 'crawler: ' : '') . $browserArr['Parent'] : 'unknown';
                     if (!isset($browsers[$browserParent])) {
                         $browsers[$browserParent] = 0;
@@ -271,10 +274,10 @@ class UserlogStats extends XoopsObject
         switch ($type) {
             case 'log':
                 if ($asObject) {
-                    $logsObj = $this->userlog->getHandler('log')->getLogs($limitDel, 0, $criteria, 'log_id', 'ASC');
+                    $logsObj = $this->helper->getHandler('log')->getLogs($limitDel, 0, $criteria, 'log_id', 'ASC');
                     $numDel  = 0;
                     foreach (array_keys($logsObj) as $key) {
-                        $numDel += $this->userlog->getHandler('log')->delete($logsObj[$key], true) ? 1 : 0;
+                        $numDel += $this->helper->getHandler('log')->delete($logsObj[$key], true) ? 1 : 0;
                     }
                     if ($numDel > 0) {
                         $this->update('logdel', $period, $numDel, true); // increment
@@ -283,7 +286,7 @@ class UserlogStats extends XoopsObject
 
                     return $numDel;
                 }
-                $numDel = $this->userlog->getHandler('log')->deleteAll($criteria, true, $asObject);
+                $numDel = $this->helper->getHandler('log')->deleteAll($criteria, true, $asObject);
                 if ($numDel > 0) {
                     $this->update('logdel', $period, $numDel, true); // increment
                 }
@@ -305,7 +308,7 @@ class UserlogStats extends XoopsObject
     public function update($type = 'log', $period = 0, $value = null, $increment = false, $link = '')
     {
         // check if version is 115 => unique index is added
-        if ($this->userlog->getModule()->getVar('version') < 115) {
+        if ($this->helper->getModule()->getVar('version') < 115) {
             return false;
         }
         // if there is nothing to add to db
@@ -316,7 +319,7 @@ class UserlogStats extends XoopsObject
         if (in_array($type, ['file', 'referral', 'browser', 'OS']) && empty($link)) {
             return false;
         }
-        $statsObj = $this->userlog->getHandler('stats')->create();
+        $statsObj = $this->helper->getHandler('stats')->create();
 
         $statsObj->setVar('stats_type', $type);
         $statsObj->setVar('stats_period', $period);
@@ -324,7 +327,7 @@ class UserlogStats extends XoopsObject
         $statsObj->setVar('stats_value', $value);
         $statsObj->setVar('time_update', time());
         // increment value if increment is true
-        $ret = $this->userlog->getHandler('stats')->insertUpdate($statsObj, [
+        $ret = $this->helper->getHandler('stats')->insertUpdate($statsObj, [
             'stats_value' => empty($increment) ? $value : "stats_value + {$value}",
             'time_update' => time()
         ]);
@@ -348,215 +351,20 @@ class UserlogStats extends XoopsObject
         if (empty($expire)) {
             return false;
         } // if $expire = 0 dont delete
-        $criteriaDel = new CriteriaCompo();
-        $until       = time() - $this->userlog->getSinceTime($expire);
+        $criteriaDel = new \CriteriaCompo();
+        $until       = time() - $this->helper->getSinceTime($expire);
         if (!empty($types)) {
-            $criteriaTypes = new CriteriaCompo();
+            $criteriaTypes = new \CriteriaCompo();
             $types         = is_array($types) ? $types : [$types];
             foreach ($types as $type) {
-                $criteriaTypes->add(new Criteria('stats_type', $type, '='), 'OR');
+                $criteriaTypes->add(new \Criteria('stats_type', $type, '='), 'OR');
             }
             $criteriaDel->add($criteriaTypes, 'AND');
         }
-        $criteriaTime = new CriteriaCompo();
-        $criteriaTime->add(new Criteria('time_update', $until, '<'), 'AND');
+        $criteriaTime = new \CriteriaCompo();
+        $criteriaTime->add(new \Criteria('time_update', $until, '<'), 'AND');
         $criteriaDel->add($criteriaTime, 'AND');
 
-        return $this->userlog->getHandler('stats')->deleteAll($criteriaDel); // function deleteAll($criteria = null, $force = true, $asObject = false)
-    }
-}
-
-/**
- * Class UserlogStatsHandler
- */
-class UserlogStatsHandler extends XoopsPersistableObjectHandler
-{
-    public $userlog = null;
-
-    /**
-     * @param null|XoopsDatabase $db
-     */
-    public function __construct(XoopsDatabase $db)
-    {
-        $this->userlog = Userlog::getInstance();
-        parent::__construct($db, USERLOG_DIRNAME . '_stats', 'UserlogStats', 'stats_id', 'stats_type');
-    }
-
-    /**
-     * @param       $object
-     * @param array $duplicate
-     * @param bool  $force
-     *
-     * @return bool
-     */
-    public function insertUpdate($object, $duplicate = [], $force = true)
-    {
-        $handler = $this->loadHandler('write');
-
-        if (!$object->isDirty()) {
-            trigger_error("Data entry is not inserted - the object '" . get_class($object) . "' is not dirty," . "' with errors: " . implode(', ', $object->getErrors()), E_USER_NOTICE);
-
-            return $object->getVar($this->keyName);
-        }
-        if (!$handler->cleanVars($object)) {
-            trigger_error("Insert failed in method 'cleanVars' of object '" . get_class($object) . "' with errors: " . implode(', ', $object->getErrors()), E_USER_WARNING);
-
-            return $object->getVar($this->keyName);
-        }
-        $queryFunc = empty($force) ? 'query' : 'queryF';
-
-        if ($object->isNew()) {
-            $sql = "INSERT INTO {$this->table}";
-            if (!empty($object->cleanVars)) {
-                $keys = array_keys($object->cleanVars);
-                $vals = array_values($object->cleanVars);
-                $sql  .= ' (' . implode(', ', $keys) . ') VALUES (' . implode(',', $vals) . ')';
-            } else {
-                trigger_error("Data entry is not inserted - no variable is changed in object of '" . get_class($object) . "' with errors: " . implode(', ', $object->getErrors()), E_USER_NOTICE);
-
-                return $object->getVar($this->keyName);
-            }
-            // START ON DUPLICATE KEY UPDATE
-            if (!empty($duplicate)) {
-                $sql  .= ' ON DUPLICATE KEY UPDATE';
-                $keys = [];
-                foreach ($duplicate as $keyD => $valD) {
-                    $keys[] = " {$keyD} = {$valD} ";
-                }
-                $sql .= implode(', ', $keys);
-            }
-            // END ON DUPLICATE KEY UPDATE
-            if (!$result = $this->db->{$queryFunc}($sql)) {
-                return false;
-            }
-            if (!$object->getVar($this->keyName) && $object_id = $this->db->getInsertId()) {
-                $object->assignVar($this->keyName, $object_id);
-            }
-        } elseif (!empty($object->cleanVars)) {
-            $keys = [];
-            foreach ($object->cleanVars as $k => $v) {
-                $keys[] = " `{$k}` = {$v}";
-            }
-            $sql = 'UPDATE `' . $this->table . '` SET ' . implode(',', $keys) . ' WHERE `' . $this->keyName . '` = ' . $this->db->quote($object->getVar($this->keyName));
-            if (!$result = $this->db->{$queryFunc}($sql)) {
-                return false;
-            }
-        }
-
-        return $object->getVar($this->keyName);
-    }
-
-    /**
-     * Show index in a table
-     *
-     * @access   public
-     *
-     * @param string $index - name of the index (will be used in KEY_NAME)
-     *
-     * @internal param array $ret = Table    Non_unique    Key_name    Seq_in_index    Column_name        Collation    Cardinality        Sub_part    Packed    Null    Index_type    Comment    Index_comment
-     *
-     * @return array|bool
-     */
-    public function showIndex($index = null)
-    {
-        $sql = "SHOW INDEX FROM {$this->table}";
-        if (isset($index)) {
-            $sql .= " WHERE KEY_NAME = '{$index}'";
-        }
-        if (!$result = $this->db->queryF($sql)) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-        $ret = [];
-        while (false !== ($myrow = $this->db->fetchArray($result))) {
-            $ret[] = $myrow;
-        }
-
-        return $ret;
-    }
-
-    /**
-     * Add Index to a table
-     *
-     * @access public
-     *
-     * @param string $index      - name of the index
-     * @param array  $fields     - array of table fields should be in the index
-     * @param string $index_type - type of the index array("INDEX", "UNIQUE", "SPATIAL", "FULLTEXT")
-     * @param        bool
-     *
-     * @return bool
-     */
-    public function addIndex($index = null, $fields = [], $index_type = 'INDEX')
-    {
-        if (empty($index) || empty($fields)) {
-            return false;
-        }
-        if ($this->showIndex($index)) {
-            return false;
-        } // index is exist
-        $index_type = strtoupper($index_type);
-        if (!in_array($index_type, ['INDEX', 'UNIQUE', 'SPATIAL', 'FULLTEXT'])) {
-            return false;
-        }
-        $fields = is_array($fields) ? implode(',', $fields) : $fields;
-        $sql    = "ALTER TABLE {$this->table} ADD {$index_type} {$index} ( {$fields} )";
-        if (!$result = $this->db->queryF($sql)) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Drop index in a table
-     *
-     * @access public
-     *
-     * @param string $index - name of the index
-     * @param        bool
-     *
-     * @return bool
-     */
-    public function dropIndex($index = null)
-    {
-        if (empty($index)) {
-            return false;
-        }
-        if (!$this->showIndex($index)) {
-            return false;
-        } // index is not exist
-        $sql = "ALTER TABLE {$this->table} DROP INDEX {$index}";
-        if (!$result = $this->db->queryF($sql)) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Change Index = Drop index + Add Index
-     *
-     * @access public
-     *
-     * @param string $index      - name of the index
-     * @param array  $fields     - array of table fields should be in the index
-     * @param string $index_type - type of the index array("INDEX", "UNIQUE", "SPATIAL", "FULLTEXT")
-     * @param        bool
-     *
-     * @return bool
-     */
-    public function changeIndex($index = null, $fields = [], $index_type = 'INDEX')
-    {
-        if ($this->showIndex($index) && !$this->dropIndex($index)) {
-            return false;
-        } // if index is exist but cannot drop it
-
-        return $this->addIndex($index, $fields, $index_type);
+        return $this->helper->getHandler('stats')->deleteAll($criteriaDel); // function deleteAll($criteria = null, $force = true, $asObject = false)
     }
 }

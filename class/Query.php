@@ -1,4 +1,5 @@
-<?php
+<?php namespace XoopsModules\Userlog;
+
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -18,6 +19,9 @@
  * @author          irmtfan (irmtfan@yahoo.com)
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
+
+use XoopsModules\Userlog;
+
 // Important note: use $eleNamePrefix = "options" because it is hard-coded in XOOPS CORE > BLOCKS
 
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
@@ -31,16 +35,16 @@ xoops_loadLanguage('findusers');
 /**
  * Class UserlogQuery
  */
-class UserlogQuery
+class Query
 {
-    public $userlog = null;
+    public $helper = null;
 
     /**
      *
      */
     protected function __construct()
     {
-        $this->userlog = Userlog::getInstance();
+        $this->helper = Userlog\Helper::getInstance();
     }
 
     /**
@@ -68,31 +72,31 @@ class UserlogQuery
      */
     public function loginregHistoryShow($args)
     {
-        $criteria = new CriteriaCompo();
-        $criteria->add(new Criteria('uid', 0), 'AND');
-        $criteria->add(new Criteria('post', '%pass%', 'LIKE'), 'AND'); // login or register
-        $criteria->add(new Criteria('post', '%login_patch%', 'LIKE'), 'AND'); // login/register was patched
+        $criteria = new \CriteriaCompo();
+        $criteria->add(new \Criteria('uid', 0), 'AND');
+        $criteria->add(new \Criteria('post', '%pass%', 'LIKE'), 'AND'); // login or register
+        $criteria->add(new \Criteria('post', '%login_patch%', 'LIKE'), 'AND'); // login/register was patched
         $opt[0] = 0;
         $opt[1] = 'NOT LIKE';
         $opt[2] = 'LIKE';
 
         $i = 1;
         if (!empty($args[$i])) {
-            $criteria->add(new Criteria('post', '%vpass%', $opt[$args[$i]]), 'AND'); // login "NOT LIKE" register "LIKE"
+            $criteria->add(new \Criteria('post', '%vpass%', $opt[$args[$i]]), 'AND'); // login "NOT LIKE" register "LIKE"
         }
         ++$i; //2
         if (!empty($args[$i])) {
-            $criteria->add(new Criteria('post', '%success%', $opt[$args[$i]]), 'AND'); // falied "NOT LIKE" success "LIKE"
+            $criteria->add(new \Criteria('post', '%success%', $opt[$args[$i]]), 'AND'); // falied "NOT LIKE" success "LIKE"
         }
         ++$i; //3
         if (!empty($args[$i])) {
-            $criteria->add(new Criteria('post', '%level%', $opt[$args[$i]]), 'AND'); // inactive "NOT LIKE" active "LIKE"
+            $criteria->add(new \Criteria('post', '%level%', $opt[$args[$i]]), 'AND'); // inactive "NOT LIKE" active "LIKE"
         }
         ++$i; //4
         if (!empty($args[$i])) {
-            $criteria->add(new Criteria('post', '%last_visit%', $opt[$args[$i]]), 'AND'); // never login before "NOT LIKE" login before "LIKE"
+            $criteria->add(new \Criteria('post', '%last_visit%', $opt[$args[$i]]), 'AND'); // never login before "NOT LIKE" login before "LIKE"
         }
-        $loginsObj = $this->userlog->getHandler('log')->getLogs($args[0], 0, $criteria, 'log_id', $args[5], ['log_id', 'log_time', 'post'], true); // true => as Obj
+        $loginsObj = $this->helper->getHandler('log')->getLogs($args[0], 0, $criteria, 'log_id', $args[5], ['log_id', 'log_time', 'post'], true); // true => as Obj
         $block     = [];
         if (empty($loginsObj)) {
             return $block;
@@ -124,7 +128,7 @@ class UserlogQuery
                 $block[$log_id]['msg']     .= ('register' === $block[$log_id]['loginOrRegister']) ? _ERRORS : _US_INCORRECTLOGIN;
                 $block[$log_id]['color']   = 'RED';
             }
-            $this->userlog->setConfig('format_date', $this->userlog->getConfig('format_date_history'));
+            $this->helper->setConfig('format_date', $this->helper->getConfig('format_date_history'));
             $block[$log_id]['log_time'] = $loginObj->getLogTime();
         }
         unset($block[$log_id]['pass'], $block[$log_id]['vpass']);
@@ -142,40 +146,40 @@ class UserlogQuery
     {
         // require_once XOOPS_ROOT_PATH . "/class/blockform.php"; //reserve for 2.6
         xoops_load('XoopsFormLoader');
-        // $form = new XoopsBlockForm(); //reserve for 2.6
-        $form = new XoopsThemeForm(_AM_USERLOG_LOGIN_REG_HISTORY, 'login_reg_history', '');
+        // $form = new \XoopsBlockForm(); //reserve for 2.6
+        $form = new \XoopsThemeForm(_AM_USERLOG_LOGIN_REG_HISTORY, 'login_reg_history', '');
 
         $i = 0;
         // number of items to display element
-        $numitemsEle = new XoopsFormText(_AM_USERLOG_ITEMS_NUM, "{$eleNamePrefix}[{$i}]", 10, 255, (int)$args[$i]);
+        $numitemsEle = new \XoopsFormText(_AM_USERLOG_ITEMS_NUM, "{$eleNamePrefix}[{$i}]", 10, 255, (int)$args[$i]);
 
         ++$i;
-        $loginRegRadioEle = new XoopsFormRadio(_LOGIN . '|' . _REGISTER, "{$eleNamePrefix}[{$i}]", $args[$i]);
+        $loginRegRadioEle = new \XoopsFormRadio(_LOGIN . '|' . _REGISTER, "{$eleNamePrefix}[{$i}]", $args[$i]);
         $loginRegRadioEle->addOption(1, _LOGIN);
         $loginRegRadioEle->addOption(2, _REGISTER);
         $loginRegRadioEle->addOption(0, _ALL);
 
         ++$i;
-        $failSucRadioEle = new XoopsFormRadio(_AM_USERLOG_FAIL . '|' . _AM_USERLOG_SUCCESS, "{$eleNamePrefix}[{$i}]", $args[$i]);
+        $failSucRadioEle = new \XoopsFormRadio(_AM_USERLOG_FAIL . '|' . _AM_USERLOG_SUCCESS, "{$eleNamePrefix}[{$i}]", $args[$i]);
         $failSucRadioEle->addOption(1, _LOGIN . '|' . _REGISTER . ' ' . _AM_USERLOG_FAIL);
         $failSucRadioEle->addOption(2, _LOGIN . '|' . _REGISTER . ' ' . _AM_USERLOG_SUCCESS);
         $failSucRadioEle->addOption(0, _ALL);
 
         ++$i;
-        $inactiveActiveRadioEle = new XoopsFormRadio(_MA_USER_LEVEL_INACTIVE . '|' . _MA_USER_LEVEL_ACTIVE, "{$eleNamePrefix}[{$i}]", $args[$i]);
+        $inactiveActiveRadioEle = new \XoopsFormRadio(_MA_USER_LEVEL_INACTIVE . '|' . _MA_USER_LEVEL_ACTIVE, "{$eleNamePrefix}[{$i}]", $args[$i]);
         $inactiveActiveRadioEle->addOption(1, _MA_USER_LEVEL_INACTIVE);
         $inactiveActiveRadioEle->addOption(2, _MA_USER_LEVEL_ACTIVE);
         $inactiveActiveRadioEle->addOption(0, _ALL);
 
         ++$i;
-        $lastVisitRadioEle = new XoopsFormRadio(_AM_USERLOG_LAST_LOGIN, "{$eleNamePrefix}[{$i}]", $args[$i]);
+        $lastVisitRadioEle = new \XoopsFormRadio(_AM_USERLOG_LAST_LOGIN, "{$eleNamePrefix}[{$i}]", $args[$i]);
         $lastVisitRadioEle->addOption(1, _NONE);
         $lastVisitRadioEle->addOption(2, _YES);
         $lastVisitRadioEle->addOption(0, _ALL);
         $lastVisitRadioEle->setDescription(_AM_USERLOG_LAST_LOGIN_DSC);
 
         ++$i;
-        $orderEle = new XoopsFormSelect(_AM_USERLOG_ORDER, "{$eleNamePrefix}[{$i}]", $args[$i]);
+        $orderEle = new \XoopsFormSelect(_AM_USERLOG_ORDER, "{$eleNamePrefix}[{$i}]", $args[$i]);
         $orderEle->addOption('DESC', _DESCENDING);
         $orderEle->addOption('ASC', _ASCENDING);
         $orderEle->setDescription(_AM_USERLOG_ORDER_DSC);
@@ -202,7 +206,7 @@ class UserlogQuery
      */
     public function stats_typeShow($args)
     {
-        $statsObj = UserlogStats::getInstance();
+        $statsObj = Userlog\Stats::getInstance();
         $refViews = $statsObj->getAll($args[1], 0, $args[0], $args[2], $args[3]); // getAll($type = array(), $start = 0, $limit = 0, $sort = "stats_value", $order = "DESC", $otherCriteria = null)
         if (empty($refViews)) {
             return false;
@@ -222,14 +226,14 @@ class UserlogQuery
     {
         // require_once XOOPS_ROOT_PATH . "/class/blockform.php"; //reserve for 2.6
         xoops_load('XoopsFormLoader');
-        // $form = new XoopsBlockForm(); //reserve for 2.6
-        $form = new XoopsThemeForm(_AM_USERLOG_STATS_TYPE, 'stats_type', '');
+        // $form = new \XoopsBlockForm(); //reserve for 2.6
+        $form = new \XoopsThemeForm(_AM_USERLOG_STATS_TYPE, 'stats_type', '');
 
         $i = 0;
         // number of items to display element
-        $numitemsEle = new XoopsFormText(_AM_USERLOG_ITEMS_NUM, "{$eleNamePrefix}[{$i}]", 10, 255, (int)$args[$i]);
+        $numitemsEle = new \XoopsFormText(_AM_USERLOG_ITEMS_NUM, "{$eleNamePrefix}[{$i}]", 10, 255, (int)$args[$i]);
         ++$i;
-        $typeEle = new XoopsFormSelect(_AM_USERLOG_STATS_TYPE, "{$eleNamePrefix}[{$i}]", $args[$i]);
+        $typeEle = new \XoopsFormSelect(_AM_USERLOG_STATS_TYPE, "{$eleNamePrefix}[{$i}]", $args[$i]);
         $typeEle->addOptionArray([
                                      'referral' => _AM_USERLOG_STATS_REFERRAL,
                                      'browser'  => _AM_USERLOG_STATS_BROWSER,
@@ -238,7 +242,7 @@ class UserlogQuery
         $typeEle->setDescription(_AM_USERLOG_STATS_TYPE_DSC);
 
         ++$i;
-        $sortEle = new XoopsFormSelect(_AM_USERLOG_SORT, "{$eleNamePrefix}[{$i}]", $args[$i]);
+        $sortEle = new \XoopsFormSelect(_AM_USERLOG_SORT, "{$eleNamePrefix}[{$i}]", $args[$i]);
         $sortEle->addOptionArray([
                                      'stats_link'  => _AM_USERLOG_ITEM_NAME,
                                      'stats_value' => _AM_USERLOG_VIEW,
@@ -247,7 +251,7 @@ class UserlogQuery
         $sortEle->setDescription(_AM_USERLOG_SORT_DSC);
 
         ++$i;
-        $orderEle = new XoopsFormSelect(_AM_USERLOG_ORDER, "{$eleNamePrefix}[{$i}]", $args[$i]);
+        $orderEle = new \XoopsFormSelect(_AM_USERLOG_ORDER, "{$eleNamePrefix}[{$i}]", $args[$i]);
         $orderEle->addOption('DESC', _DESCENDING);
         $orderEle->addOption('ASC', _ASCENDING);
         $orderEle->setDescription(_AM_USERLOG_ORDER_DSC);
@@ -271,16 +275,16 @@ class UserlogQuery
     public function modulesadminShow($args)
     {
         xoops_loadLanguage('admin/modulesadmin', 'system');
-        $criteria = new CriteriaCompo();
-        $criteria->add(new Criteria('module', 'system'), 'AND');
-        $criteria->add(new Criteria('request_method', 'POST'), 'AND'); // only POST method
+        $criteria = new \CriteriaCompo();
+        $criteria->add(new \Criteria('module', 'system'), 'AND');
+        $criteria->add(new \Criteria('request_method', 'POST'), 'AND'); // only POST method
         $refLike = '%modulesadmin&op=%';
         if (!empty($args[1])) {
             $refLike .= "module={$args[1]}";
         }
-        $criteria->add(new Criteria('referer', "{$refLike}", 'LIKE'), 'AND'); // modules admin
+        $criteria->add(new \Criteria('referer', "{$refLike}", 'LIKE'), 'AND'); // modules admin
 
-        $modulesadminObjs = $this->userlog->getHandler('log')->getLogs($args[0], 0, $criteria, 'log_id', 'DESC', ['log_id', 'log_time', 'referer'], true); // true => as Obj
+        $modulesadminObjs = $this->helper->getHandler('log')->getLogs($args[0], 0, $criteria, 'log_id', 'DESC', ['log_id', 'log_time', 'referer'], true); // true => as Obj
         if (empty($modulesadminObjs)) {
             return false;
         }

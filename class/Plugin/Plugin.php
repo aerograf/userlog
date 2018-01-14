@@ -1,4 +1,5 @@
-<?php
+<?php namespace XoopsModules\Userlog\Plugin;
+
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -17,17 +18,17 @@
 // irmtfan copy from xoops26 xoops_lib/Xoops/Module/plugin.php class
 // change XoopsLoad -> self
 // change $xoops -> $GLOBALS['xoops']
-// change  Userlog_Module_Plugin_Abstract , Userlog_Module_Plugin
+// change  Userlog\PluginAbstract , Plugin
 // change  $xoops->getActiveModules() -> xoops_getActiveModules()
 
-class Userlog_Module_Plugin
+class Plugin
 {
     /**
      * @param string $dirname
      * @param string $pluginName
      * @param bool   $force
      *
-     * @return bool|Xoops_Module_Plugin_Abstract false if plugin does not exist
+     * @return bool|\Xoops_Module_Plugin_Abstract false if plugin does not exist
      */
     public static function getPlugin($dirname, $pluginName = 'system', $force = false)
     {
@@ -54,7 +55,7 @@ class Userlog_Module_Plugin
         static $plugins = [];
         if (!isset($plugins[$pluginName])) {
             $plugins[$pluginName] = [];
-            //$xoops = Xoops::getInstance();
+            //$xoops = \Xoops::getInstance();
 
             //Load interface for this plugin
             if (!self::loadFile($GLOBALS['xoops']->path("modules/{$pluginName}/class/plugin/interface.php"))) {
@@ -71,7 +72,7 @@ class Userlog_Module_Plugin
                     $className = ucfirst($dirname) . ucfirst($pluginName) . 'Plugin';
                     $interface = ucfirst($pluginName) . 'PluginInterface';
                     $class     = new $className($dirname);
-                    if ($class instanceof Userlog_Module_Plugin_Abstract && $class instanceof $interface) {
+                    if ($class instanceof Userlog\PluginAbstract && $class instanceof $interface) {
                         $plugins[$pluginName][$dirname] = $class;
                     }
                 }

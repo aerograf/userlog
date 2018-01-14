@@ -83,7 +83,7 @@ define('_MI_USERLOG_WEBMASTER_NOPERM', "You are one of the webmasters but don't 
 //1.17
 //Help
 define('_MI_USERLOG_DIRNAME', basename(dirname(dirname(__DIR__))));
-define('_MI_USERLOG_HELP_HEADER', __DIR__.'/help/helpheader.tpl');
+define('_MI_USERLOG_HELP_HEADER', __DIR__ . '/help/helpheader.tpl');
 define('_MI_USERLOG_BACK_2_ADMIN', 'Back to Administration of ');
 define('_MI_USERLOG_OVERVIEW', 'Overview');
 

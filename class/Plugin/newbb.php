@@ -1,4 +1,5 @@
-<?php
+<?php namespace XoopsModules\Userlog\Plugin;
+
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -20,13 +21,15 @@
  */
 
 use Xmf\Request;
+use XoopsModules\Userlog\Plugin;
+use XoopsModules\Newbb;
 
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 
 /**
  * Class NewbbUserlogPlugin
  */
-class NewbbUserlogPlugin extends Userlog_Module_Plugin_Abstract implements UserlogPluginInterface
+class NewbbUserlogPlugin extends Plugin\PluginAbstract implements Plugin\PluginInterface
 {
     /**
      * @param string $subscribe_from Name of the script
@@ -65,10 +68,10 @@ class NewbbUserlogPlugin extends Userlog_Module_Plugin_Abstract implements Userl
         switch ($subscribe_from) {
             case 'viewtopic.php':
 
-                /** @var \NewbbTopicHandler $topicHandler */
-                $topicHandler = xoops_getModuleHandler('topic', 'newbb');
+                /** @var \Newbb\TopicHandler $topicHandler */
+                $topicHandler = Newbb\Helper::getInstanc()->getHandlre('Topic');
                 $post_id      = Request::getInt('post_id', 0);
-                $move         = Request::getString('move', '', 'GET') ;
+                $move         = Request::getString('move', '', 'GET');
                 $topic_id     = Request::getInt('topic_id', 0);
                 if (!empty($post_id)) {
                     $topic_obj = $topicHandler->getByPost($post_id);

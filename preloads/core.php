@@ -24,7 +24,7 @@ defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 /**
  * Class UserlogCorePreload
  */
-class UserlogCorePreload extends XoopsPreloadItem
+class UserlogCorePreload extends \XoopsPreloadItem
 {
     // to log main part of modules
     /**

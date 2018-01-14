@@ -8,6 +8,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -18,6 +19,9 @@
  * @author          irmtfan (irmtfan@yahoo.com)
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
+
+use XoopsModules\Userlog;
+
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 require_once __DIR__ . '/common.php';
 /**
@@ -25,9 +29,9 @@ require_once __DIR__ . '/common.php';
  *
  * @return int
  */
-function xoops_module_uninstall_userlog(XoopsModule $module)
+function xoops_module_uninstall_userlog(\XoopsModule $module)
 {
-    $logsetObj = UserlogSetting::getInstance();
+    $logsetObj = Userlog\Setting::getInstance();
 
     return $logsetObj->cleanCache(); // delete all settings caches
 }
@@ -39,11 +43,11 @@ function xoops_module_uninstall_userlog(XoopsModule $module)
  * @return bool|mixed
  */
 
-function xoops_module_update_userlog(XoopsModule $module, $prev_version = null)
+function xoops_module_update_userlog(\XoopsModule $module, $prev_version = null)
 {
     if ($prev_version == round($module->getInfo('version') * 100, 2)) {
         $module->setErrors('You have the latest ' . $module->getInfo('name') . ' module (' . $module->getInfo('dirname') . ' version ' . $module->getInfo('version') . ') and update is not necessary');
-//        print_r($module->getErrors());
+        //        print_r($module->getErrors());
 
         return true;
     }
@@ -63,7 +67,7 @@ function xoops_module_update_userlog(XoopsModule $module, $prev_version = null)
     }
     $errors = $module->getErrors();
     if (!empty($errors)) {
-//        print_r($errors);
+        //        print_r($errors);
     }
 
     return $ret;
@@ -76,15 +80,15 @@ function xoops_module_update_userlog(XoopsModule $module, $prev_version = null)
  *
  * @return bool
  */
-function update_userlog_v100(XoopsModule $module)
+function update_userlog_v100(\XoopsModule $module)
 {
-    $field   = 'module_name';
-    $userlog  = Userlog::getInstance();
-    $ret     = $userlog->getHandler('log')->showFields($field);
+    $field  = 'module_name';
+    $helper = Userlog\Helper::getInstance();
+    $ret    = $helper->getHandler('log')->showFields($field);
     preg_match_all('!\d+!', $ret[$field]['Type'], $nums);
     // only change if module_name Type was VARCHAR(25)
     if (25 == $nums[0][0]) {
-        $ret2 = $userlog->getHandler('log')->changeField($field, "VARCHAR(50) NOT NULL default ''");
+        $ret2 = $helper->getHandler('log')->changeField($field, "VARCHAR(50) NOT NULL default ''");
     } else {
         $ret2 = true;
         $module->setErrors("Your table field ({$field}) with size {$ret[$field]['Type']} don't need change.");
@@ -99,10 +103,10 @@ function update_userlog_v100(XoopsModule $module)
  *
  * @return bool
  */
-function update_userlog_v114(XoopsModule $module)
+function update_userlog_v114(\XoopsModule $module)
 {
-    $userlog    = Userlog::getInstance();
-    $logsetsObj = $userlog->getHandler('setting')->getAll();
+    $helper     = Userlog\Helper::getInstance();
+    $logsetsObj = $helper->getHandler('setting')->getAll();
     $ret        = true;
     foreach ($logsetsObj as $setObj) {
         if (strpos($setObj->getVar('options'), 'active')) {
@@ -123,21 +127,21 @@ function update_userlog_v114(XoopsModule $module)
  *
  * @return mixed
  */
-function update_userlog_v115(XoopsModule $module)
+function update_userlog_v115(\XoopsModule $module)
 {
-    $userlog  = Userlog::getInstance();
+    $helper = Userlog\Helper::getInstance();
     // Only change the field from INDEX to UNIQUE if it is not unique
     // if (isset($indexArr[0]["Non_unique"]) || $indexArr[0]["Non_unique"] == 1) { }
     // change the index in _stats table
-    if (!$ret = $userlog->getHandler('stats')->changeIndex('stats_type_link_period', ['stats_type', 'stats_link', 'stats_period'], 'UNIQUE')) {
+    if (!$ret = $helper->getHandler('stats')->changeIndex('stats_type_link_period', ['stats_type', 'stats_link', 'stats_period'], 'UNIQUE')) {
         $module->setErrors("'stats_type_link_period' index is not changed to unique. Warning: do not use module until you change this index to unique.");
     }
     // drop the index in _log table
-    if (!$ret = $userlog->getHandler('log')->dropIndex('log_id_uid')) {
+    if (!$ret = $helper->getHandler('log')->dropIndex('log_id_uid')) {
         $module->setErrors("'log_id_uid' index is not dropped.");
     }
     // add the index in _log table
-    if (!$ret = $userlog->getHandler('log')->addIndex('log_time', ['log_time'])) {
+    if (!$ret = $helper->getHandler('log')->addIndex('log_time', ['log_time'])) {
         $module->setErrors("'log_time' index is not added.");
     }
 
@@ -149,13 +153,13 @@ function update_userlog_v115(XoopsModule $module)
  *
  * @return bool
  */
-function update_userlog_v116(XoopsModule $module)
+function update_userlog_v116(\XoopsModule $module)
 {
     // remove old html template files
     $template_directory = XOOPS_ROOT_PATH . '/modules/' . $module->getVar('dirname', 'n') . '/templates/';
     $template_list      = array_diff(scandir($template_directory, SCANDIR_SORT_NONE), ['..', '.']);
     foreach ($template_list as $k => $v) {
-        $fileinfo = new SplFileInfo($template_directory . $v);
+        $fileinfo = new \SplFileInfo($template_directory . $v);
         if ('html' === $fileinfo->getExtension() && 'index.html' !== $fileinfo->getFilename()) {
             @unlink($template_directory . $v);
         }

@@ -11,12 +11,12 @@ in userlog/class/setting.php
     {
         $V = strtolower($V);
 
-        if ($this->userlog->getUser()) {
-            $uid = $this->userlog->getUser()->getVar('uid');
-            $uname = $this->userlog->getUser()->getVar('uname');
-            $last_login = $this->userlog->getUser()->getVar('last_login');
-            $admin = $this->userlog->getUser()->isAdmin();
-            $groups = "g" . implode("g",$this->userlog->getUser()->getGroups()); // g1g2
+        if ($this->helper->getUser()) {
+            $uid = $this->helper->getUser()->getVar('uid');
+            $uname = $this->helper->getUser()->getVar('uname');
+            $last_login = $this->helper->getUser()->getVar('last_login');
+            $admin = $this->helper->getUser()->isAdmin();
+            $groups = "g" . implode("g",$this->helper->getUser()->getGroups()); // g1g2
         } else {
             $uid = 0;
             $uname = '';
@@ -83,11 +83,11 @@ in userlog/class/setting.php
                                 ),
         "module" =>     array(  "type" => "text",
                                 "title" => _AM_USERLOG_MODULE,
-                                "value" => $this->userlog->getLogModule()->getVar("dirname")
+                                "value" => $this->helper->getLogModule()->getVar("dirname")
                                 ),
         "module_name" => array( "type" => "text",
                                 "title" => _AM_USERLOG_MODULE_NAME,
-                                "value" => $this->userlog->getLogModule()->getVar("name")
+                                "value" => $this->helper->getLogModule()->getVar("name")
                                 ),
         "item_name" =>  array(  "type" => "text",
                                 "title" => _AM_USERLOG_ITEM_NAME,
@@ -152,7 +152,7 @@ in userlog/class/setting.php
                                 "value" => 1 // for item_name and item_id
                                 ),
         );
-        $ret = $this->userlog->getFromKeys($options, $option);
+        $ret = $this->helper->getFromKeys($options, $option);
         if (empty($V)) return $ret;
         if ($V == "key") return array_keys($ret);
         $ret2 = null;
@@ -190,20 +190,20 @@ in userlog/class/setting.php
     public function getSet()
     {
         // if uid setting exist in File
-        $unique_uid = ($this->userlog->getUser()) ? $this->userlog->getUser()->getVar('uid') : 0;
+        $unique_uid = ($this->helper->getUser()) ? $this->helper->getUser()->getVar('uid') : 0;
         if ($options = $this->getFile('uid', $unique_uid)) {
             return $options;
         }
 
         // if gid setting exist in File
-        $unique_gid = ($this->userlog->getUser()) ? $this->userlog->getUser()->getGroups() :  array(XOOPS_GROUP_ANONYMOUS);
+        $unique_gid = ($this->helper->getUser()) ? $this->helper->getUser()->getGroups() :  array(XOOPS_GROUP_ANONYMOUS);
         foreach ($unique_gid as $gid) {
             if ($options = $this->getFile('gid', $gid)) {
                 return $options;
             }
         }
         // if ip setting exist in File
-        $unique_ip = XoopsUserUtility::getIP(); // ip as int
+        $unique_ip = \XoopsUserUtility::getIP(); // ip as int
         if ($options = $this->getFile('ip', $unique_ip)) {
             return $options;
         }
@@ -213,9 +213,9 @@ in userlog/class/setting.php
         }
         ///////////////////////////////////////////////////////////
         // check probability
-        if(!$this->userlog->probCheck($this->userlog->getConfig("probset"))) return false;
+        if(!$this->helper->probCheck($this->helper->getConfig("probset"))) return false;
         // database get All is better for performance???
-        $logsetsObj = $this->userlog->getHandler('setting')->getAll();
+        $logsetsObj = $this->helper->getHandler('setting')->getAll();
         if (empty($logsetsObj)) return false; // if not set in db return false
         $uid_unique_uid = "uid" . $unique_uid;
         foreach($unique_gid as $key=>$gid) {
@@ -262,11 +262,11 @@ There we have all needed information about items. so i wrote this nice and trick
 [code]
     public function setItem()
     {
-        $not_config = $this->userlog->getLogModule()->getInfo('notification');
+        $not_config = $this->helper->getLogModule()->getInfo('notification');
         if (!empty($not_config)) {
             foreach ($not_config['category'] as $category) {
                 // if $item_id != 0 ---> return true
-                if (!empty($category['item_name']) && $item_id = XoopsRequest::getInt($category['item_name'], 0)){
+                if (!empty($category['item_name']) && $item_id = \XoopsRequest::getInt($category['item_name'], 0)){
                     $this->setVar('item_name', $category['item_name']);
                     $this->setVar('item_id', $item_id);
                     return true;

@@ -21,12 +21,13 @@
  */
 
 use Xmf\Request;
+use XoopsModules\Userlog;
 
 require_once __DIR__ . '/admin_header.php';
 require_once XOOPS_ROOT_PATH . '/class/pagenav.php';
 xoops_cp_header();
-$userlog  =  Userlog::getInstance();
-$queryObj = UserlogQuery::getInstance();
+$helper   = Userlog\Helper::getInstance();
+$queryObj = Userlog\Query::getInstance();
 
 // Where do we start ?
 $startentry       = Request::getInt('startentry', 0);
@@ -40,12 +41,12 @@ $users            = Request::getArray('users', -1);
 $groups           = Request::getArray('groups', 0);
 
 // update all time stats
-$statsObj = UserlogStats::getInstance();
+$statsObj = Userlog\Stats::getInstance();
 $statsObj->updateAll('log', 100); // prob = 100
 $statsObj->updateAll('set', 100); // prob = 100
 $statsObj->updateAll('file', 100); // prob = 100
-$statsObj->updateAll('referral', $userlog->getConfig('probstats'));
-$statsObj->updateAll('browser', $userlog->getConfig('probstats')); // or $statsObj->updateAll("OS", $userlog->getConfig("probstats"));
+$statsObj->updateAll('referral', $helper->getConfig('probstats'));
+$statsObj->updateAll('browser', $helper->getConfig('probstats')); // or $statsObj->updateAll("OS", $helper->getConfig("probstats"));
 
 $stats       = $statsObj->getAll(['log', 'logdel', 'set', 'file']);
 $adminObject = \Xmf\Module\Admin::getInstance();
@@ -58,40 +59,36 @@ foreach ($stats as $type => $arr) {
     }
     foreach ($arr as $period => $arr2) {
         // use sprintf in moduleadmin: sprintf($text, "<span style='color : " . $color . "; font-weight : bold;'>" . $value . "</span>")
-        $adminObject->addInfoBoxLine(sprintf(
-            _AM_USERLOG_STATS_TYPE_PERIOD,
-            '%1$s',
-            $types[$type],
-            constant('_AM_USERLOG_' . strtoupper($periods[$period])) . ' ' . _AM_USERLOG_STATS_TIME_UPDATE . ' ' . $arr2['time_update'],
-            $arr2['value']
-        ), '', $arr2['value'] ? 'GREEN' : 'RED');
+        $adminObject->addInfoBoxLine(sprintf(_AM_USERLOG_STATS_TYPE_PERIOD, '%1$s', $types[$type], constant('_AM_USERLOG_' . strtoupper($periods[$period])) . ' ' . _AM_USERLOG_STATS_TIME_UPDATE . ' ' . $arr2['time_update'], $arr2['value']), '', $arr2['value'] ? 'GREEN' : 'RED');
     }
 }
-$criteria = new CriteriaCompo();
+$criteria = new \CriteriaCompo();
 $criteria->setGroupBy('module');
-$moduleViews = $userlog->getHandler('log')->getCounts($criteria);
-$dirNames    = $userlog->getModules();
+$moduleViews = $helper->getHandler('log')->getCounts($criteria);
+$dirNames    = $helper->getModules();
 if (!empty($moduleViews)) {
     $adminObject->addInfoBox(_AM_USERLOG_VIEW_MODULE);
     foreach ($moduleViews as $mDir => $views) {
-        $adminObject->addInfoBoxLine(sprintf($dirNames[$mDir] . ': %s', $views), '', $views ? 'GREEN' : 'RED');
+        if (isset($dirNames[$mDir])) {
+            $adminObject->addInfoBoxLine(sprintf($dirNames[$mDir] . ': %s', $views), '', $views ? 'GREEN' : 'RED');
+        }
     }
 }
-$criteria = new CriteriaCompo();
+$criteria = new \CriteriaCompo();
 $criteria->setGroupBy('uid');
 $criteria->setLimit(10);
-$userViews = $userlog->getHandler('log')->getCounts($criteria);
+$userViews = $helper->getHandler('log')->getCounts($criteria);
 if (!empty($userViews)) {
     $adminObject->addInfoBox(_AM_USERLOG_VIEW_USER);
     foreach ($userViews as $uid => $views) {
         $adminObject->addInfoBoxLine(sprintf(($uid ? '<a href="' . XOOPS_URL . '/userinfo.php?uid=' . $uid . '">' . XoopsUserUtility::getUnameFromId($uid) . '</a>' : XoopsUserUtility::getUnameFromId(0)) . ': %s', $views), '', $views ? 'GREEN' : 'RED');
     }
 }
-$criteria = new CriteriaCompo();
-$criteria->add(new Criteria('groups', '%g%', 'LIKE')); // Why cannot use this?: $criteria->add(new Criteria("groups", "", "!="))
+$criteria = new \CriteriaCompo();
+$criteria->add(new \Criteria('groups', '%g%', 'LIKE')); // Why cannot use this?: $criteria->add(new \Criteria("groups", "", "!="))
 $criteria->setGroupBy('groups');
 $criteria->setLimit(10);
-$groupViews = $userlog->getHandler('log')->getCounts($criteria);
+$groupViews = $helper->getHandler('log')->getCounts($criteria);
 if (!empty($groupViews)) {
     $adminObject->addInfoBox(_AM_USERLOG_VIEW_GROUP);
     foreach ($groupViews as $gids => $views) {
@@ -105,7 +102,7 @@ if (!empty($groupViews)) {
             }
         }
     }
-    $groupNames = $userlog->getGroupList();
+    $groupNames = $helper->getGroupList();
     foreach ($gidViews as $gid => $views) {
         $adminObject->addInfoBoxLine(sprintf($groupNames[$gid] . ': %s', $views), '', $views ? 'GREEN' : 'RED');
     }
@@ -172,17 +169,17 @@ foreach ($modules as $dir) {
     }
 }
 // END module - script - item
-$loglogObj = UserlogLog::getInstance();
+$loglogObj = Userlog\Log::getInstance();
 
 // get items views
 $items = $loglogObj->getViews($limitentry, $startentry, $sortentry, $orderentry, $module, $log_timeGT, ($users[0] != -1) ? $users : [], (0 != $groups[0]) ? $groups : []);
 $GLOBALS['xoopsTpl']->assign('sortentry', $sortentry);
 $GLOBALS['xoopsTpl']->assign('items', $items);
 // SRART form
-$form = new XoopsThemeForm(_AM_USERLOG_VIEW, 'views', 'stats.php', 'post', true);
+$form = new \XoopsThemeForm(_AM_USERLOG_VIEW, 'views', 'stats.php', 'post', true);
 // number of items to display element
-$limitEl = new XoopsFormText(_AM_USERLOG_ITEMS_NUM, 'limitentry', 10, 255, $limitentry);
-$sortEl  = new XoopsFormSelect(_AM_USERLOG_SORT, 'sortentry', $sortentry);
+$limitEl = new \XoopsFormText(_AM_USERLOG_ITEMS_NUM, 'limitentry', 10, 255, $limitentry);
+$sortEl  = new \XoopsFormSelect(_AM_USERLOG_SORT, 'sortentry', $sortentry);
 $sortEl->addOptionArray([
                             'count'        => _AM_USERLOG_VIEW,
                             'module'       => _AM_USERLOG_MODULE,
@@ -190,12 +187,12 @@ $sortEl->addOptionArray([
                             'module_count' => _AM_USERLOG_VIEW_MODULE
                         ]);
 $sortEl->setDescription(_AM_USERLOG_SORT_DSC);
-$orderEl = new XoopsFormSelect(_AM_USERLOG_ORDER, 'orderentry', $orderentry);
+$orderEl = new \XoopsFormSelect(_AM_USERLOG_ORDER, 'orderentry', $orderentry);
 $orderEl->addOption('DESC', _DESCENDING);
 $orderEl->addOption('ASC', _ASCENDING);
 $orderEl->setDescription(_AM_USERLOG_ORDER_DSC);
 // modules, items elements
-$moduleObjs = $userlog->getModules([], null, true);
+$moduleObjs = $helper->getModules([], null, true);
 $itemLinks  = [];
 foreach ($moduleObjs as $mObj) {
     $dirNames[$mObj->dirname()] = $mObj->name();
@@ -209,30 +206,30 @@ foreach ($moduleObjs as $mObj) {
         }
     }
 }
-$moduleEl = new XoopsFormSelect(_AM_USERLOG_MODULES, 'modules', $modules, 5, true);
+$moduleEl = new \XoopsFormSelect(_AM_USERLOG_MODULES, 'modules', $modules, 5, true);
 $moduleEl->addOptionArray($dirNames);
-$itemsEl = new XoopsFormSelect(_AM_USERLOG_ITEMS, 'moduleScriptItem', $moduleScriptItem, 5, true);
+$itemsEl = new \XoopsFormSelect(_AM_USERLOG_ITEMS, 'moduleScriptItem', $moduleScriptItem, 5, true);
 $itemsEl->addOptionArray($itemLinks);
 $itemsEl->setDescription(_AM_USERLOG_ITEMS_DSC);
 
-$timeEl = new XoopsFormText(_AM_USERLOG_LOG_TIMEGT, 'log_timeGT', 10, 255, $log_timeGT);
+$timeEl = new \XoopsFormText(_AM_USERLOG_LOG_TIMEGT, 'log_timeGT', 10, 255, $log_timeGT);
 $timeEl->setDescription(_AM_USERLOG_LOG_TIMEGT_FORM);
 
-$userRadioEl = new XoopsFormRadio(_AM_USERLOG_UID, 'users', $users[0]);
+$userRadioEl = new \XoopsFormRadio(_AM_USERLOG_UID, 'users', $users[0]);
 $userRadioEl->addOption(-1, _ALL);
 $userRadioEl->addOption(($users[0] != -1) ? $users[0] : 0, _SELECT); // if no user in selection box it select uid=0 anon users
 $userRadioEl->setExtra("onchange=\"var el=document.getElementById('users'); el.disabled=(this.id == 'users1'); if (!el.value) {el.value= this.value}\""); // if user dont select any option it select "all"
-$userSelectEl = new XoopsFormSelectUser(_AM_USERLOG_UID, 'users', true, $users, 3, true);
-$userEl       = new XoopsFormLabel(_AM_USERLOG_UID, $userRadioEl->render() . $userSelectEl->render());
+$userSelectEl = new \XoopsFormSelectUser(_AM_USERLOG_UID, 'users', true, $users, 3, true);
+$userEl       = new \XoopsFormLabel(_AM_USERLOG_UID, $userRadioEl->render() . $userSelectEl->render());
 
-$groupRadioEl = new XoopsFormRadio(_AM_USERLOG_GROUPS, 'groups', $groups[0]);
+$groupRadioEl = new \XoopsFormRadio(_AM_USERLOG_GROUPS, 'groups', $groups[0]);
 $groupRadioEl->addOption(0, _ALL);
 $groupRadioEl->addOption((0 != $groups[0]) ? $groups[0] : 2, _SELECT); // if no group in selection box it select gid=2 registered users
 $groupRadioEl->setExtra("onchange=\"var el=document.getElementById('groups'); el.disabled=(this.id == 'groups1'); if (!el.value) {el.value= this.value}\""); // if group dont select any option it select "all"
-$groupSelectEl = new XoopsFormSelectGroup(_AM_USERLOG_GROUPS, 'groups', true, $groups, 3, true);
-$groupEl       = new XoopsFormLabel(_AM_USERLOG_GROUPS, $groupRadioEl->render() . $groupSelectEl->render());
+$groupSelectEl = new \XoopsFormSelectGroup(_AM_USERLOG_GROUPS, 'groups', true, $groups, 3, true);
+$groupEl       = new \XoopsFormLabel(_AM_USERLOG_GROUPS, $groupRadioEl->render() . $groupSelectEl->render());
 
-$submitEl = new XoopsFormButton(_SUBMIT, 'submitlogs', _SUBMIT, 'submit');
+$submitEl = new \XoopsFormButton(_SUBMIT, 'submitlogs', _SUBMIT, 'submit');
 // add all elements to form
 $form->addElement($limitEl);
 $form->addElement($moduleEl);

@@ -8,6 +8,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -18,11 +19,14 @@
  * @author          irmtfan (irmtfan@yahoo.com)
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
+
+use XoopsModules\Userlog;
+
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 require_once __DIR__ . '/common.php';
 $moduleDirName = basename(dirname(__DIR__));
-$userlog  = Userlog::getInstance();
+$helper        = Userlog\Helper::getInstance();
 
-if (!empty($_POST) && $userlog->getConfig('postlog')) {
+if (!empty($_POST) && $helper->getConfig('postlog')) {
     include __DIR__ . '/log.php';
 }

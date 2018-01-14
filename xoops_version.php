@@ -30,9 +30,9 @@ $moduleDirName = basename(__DIR__);
 
 // ------------------- Informations ------------------- //
 $modversion = [
-    'version'             => 1.17,
+    'version'             => 1.20,
     'module_status'       => 'Beta 1',
-    'release_date'        => '2017/09/04', //yyyy/mm/dd
+    'release_date'        => '2018/01/12', //yyyy/mm/dd
     'name'                => _MI_USERLOG_NAME,
     'description'         => _MI_USERLOG_DSC,
     'official'            => 0, //1 indicates supported by XOOPS Dev Team, 0 means 3rd party supported
@@ -480,7 +480,7 @@ if (isset($xoopsOption['pagetype']) && 'admin' === $xoopsOption['pagetype'] && i
         // if we are in maintenance - now all modules - how to do it for only one module?
         if ('maintenance' === Request::getString('fct')) {
             $dump_modules = Request::getBool('dump_modules', false);
-            $dump_tables = Request::getBool('dump_tables', false);
+            $dump_tables  = Request::getBool('dump_tables', false);
             if (true === $dump_tables || true === $dump_modules) {
                 $dirname = $modversion['dirname'];
             }
@@ -499,9 +499,7 @@ if (isset($xoopsOption['pagetype']) && 'admin' === $xoopsOption['pagetype'] && i
                     $modversion['hasAdmin']    = 0;
                     $modversion['system_menu'] = 0;
                     $modversion['tables']      = null;
-                    redirect_header(XOOPS_URL . '/modules/system/help.php?mid='
-                                    . (!empty($mod) ? $mod : $xoopsModule->getVar('mid', 's'))
-                                    . '&amp;page=help', 1, sprintf(_MI_USERLOG_WEBMASTER_NOPERM, implode(',', $perm['super']['uid']), implode(',', $perm['super']['group'])));
+                    redirect_header(XOOPS_URL . '/modules/system/help.php?mid=' . (!empty($mod) ? $mod : $xoopsModule->getVar('mid', 's')) . '&amp;page=help', 1, sprintf(_MI_USERLOG_WEBMASTER_NOPERM, implode(',', $perm['super']['uid']), implode(',', $perm['super']['group'])));
                 }
             }
         }

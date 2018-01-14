@@ -21,16 +21,17 @@
  */
 
 use Xmf\Request;
+use XoopsModules\Userlog;
 
 require_once __DIR__ . '/admin_header.php';
 require_once XOOPS_ROOT_PATH . '/class/pagenav.php';
 
 xoops_cp_header();
-$userlog = Userlog::getInstance();
-$op      = Request::getString('op');
+$helper = Userlog\Helper::getInstance();
+$op     = Request::getString('op');
 // Where do we start ?
 $set_id    = Request::getInt('set_id', 0);
-$logsetObj = $set_id ? $userlog->getHandler('setting')->get($set_id) : UserlogSetting::getInstance();
+$logsetObj = $set_id ? $helper->getHandler('Setting')->get($set_id) : Userlog\Setting::getInstance();
 if ($set_id && !is_object($logsetObj)) {
     redirect_header('setting.php', 1, _AM_USERLOG_SET_ERROR);
 }
@@ -58,7 +59,7 @@ switch ($op) {
             if ($logsetObj->deleteFile($logsetObj->logby(), $logsetObj->getVar('unique_id'))) { //use getVar to get IP long
                 $msgDel = _AM_USERLOG_SET_CLEANCACHE_SUCCESS;
             }
-            if (!$userlog->getHandler('setting')->delete($logsetObj)) {
+            if (!$helper->getHandler('setting')->delete($logsetObj)) {
                 redirect_header('setting.php', 1, sprintf(_AM_USERLOG_SET_DELETE_ERROR, $logsetObj->name()));
             }
             $msgDel .= '<br>' . sprintf(_AM_USERLOG_SET_DELETE_SUCCESS, $logsetObj->name());
@@ -73,15 +74,15 @@ switch ($op) {
         $message = _AM_USERLOG_SET_EDIT;
         // check to insure only one (logby and unique_id) added to database
         if (!$set_id) {
-            $criteria = new CriteriaCompo();
-            $criteria->add(new Criteria('logby', $logby));
-            $criteria->add(new Criteria('unique_id', $unique_id));
-            $logsetObj = $userlog->getHandler('setting')->getObjects($criteria);
+            $criteria = new \CriteriaCompo();
+            $criteria->add(new \Criteria('logby', $logby));
+            $criteria->add(new \Criteria('unique_id', $unique_id));
+            $logsetObj = $helper->getHandler('setting')->getObjects($criteria);
             if ($logsetObj) {
                 $logsetObj = $logsetObj[0];
                 $message   = _AM_USERLOG_SET_UPDATE;
             } elseif ('' !== $logby) {
-                $logsetObj = $userlog->getHandler('setting')->create();
+                $logsetObj = $helper->getHandler('setting')->create();
                 $message   = _AM_USERLOG_SET_CREATE;
             } else {
                 redirect_header('setting.php', 1, _AM_USERLOG_SET_ERROR);
@@ -120,7 +121,7 @@ switch ($op) {
         break;
     case 'cancel':
         redirect_header('setting.php', 1, _AM_USERLOG_SET_CANCEL);
-        // no break
+    // no break
     case 'cleanCash':
         // delete all settings caches
         if ($numfiles = $logsetObj->cleanCache()) {
@@ -132,13 +133,13 @@ switch ($op) {
     case 'default':
     default:
         // get all dirnames for scope
-        $dirNames = $userlog->getModules();
+        $dirNames = $helper->getModules();
         // unset userlog
         //unset($dirNames[USERLOG_DIRNAME]);
         // get all settings as array
-        $sets      = $userlog->getHandler('setting')->getSets($userlog->getConfig('sets_perpage'), $startentry, null, 'set_id', 'DESC', null, false);
-        $totalSets = $userlog->getHandler('setting')->getCount();
-        $pagenav   = new XoopsPageNav($totalSets, $userlog->getConfig('sets_perpage'), $startentry, 'startentry');
+        $sets      = $helper->getHandler('setting')->getSets($helper->getConfig('sets_perpage'), $startentry, null, 'set_id', 'DESC', null, false);
+        $totalSets = $helper->getHandler('setting')->getCount();
+        $pagenav   = new \XoopsPageNav($totalSets, $helper->getConfig('sets_perpage'), $startentry, 'startentry');
         // check set arrays
         foreach ($sets as $id => $set) {
             // ip to string
@@ -161,7 +162,9 @@ switch ($op) {
             $scope   = explode(',', $set['scope']);
             $dir_str = '';
             foreach ($scope as $sc) {
-                $dir_str .= ',' . $dirNames[$sc];
+                if (isset($dirNames[$sc])) {
+                    $dir_str .= ',' . $dirNames[$sc];
+                }
             }
             $sets[$id]['scope'] = $dir_str;
         }
@@ -176,19 +179,19 @@ switch ($op) {
         // template
         $template_main = USERLOG_DIRNAME . '_admin_sets.tpl';
         // form
-        $form    = new XoopsThemeForm($set_id ? _EDIT . ' ' . $logsetObj->name() : _AM_USERLOG_SET_ADD, 'setting', 'setting.php?op=addsetting', 'post', true);
-        $nameEle = new XoopsFormText(_AM_USERLOG_SET_NAME, 'name', 10, 20, $logsetObj->name());
+        $form    = new \XoopsThemeForm($set_id ? _EDIT . ' ' . $logsetObj->name() : _AM_USERLOG_SET_ADD, 'setting', 'setting.php?op=addsetting', 'post', true);
+        $nameEle = new \XoopsFormText(_AM_USERLOG_SET_NAME, 'name', 10, 20, $logsetObj->name());
         $nameEle->setDescription(_AM_USERLOG_SET_NAME_DSC);
 
-        $logbyEle = new XoopsFormSelect(_AM_USERLOG_SET_LOGBY, 'logby', $logsetObj->logby());
+        $logbyEle = new \XoopsFormSelect(_AM_USERLOG_SET_LOGBY, 'logby', $logsetObj->logby());
         $logbyEle->addOptionArray($logsetObj->all_logby);
         $logbyEle->setDescription(_AM_USERLOG_SET_LOGBY_DSC);
 
-        $unique_idEle = new XoopsFormText(_AM_USERLOG_SET_UNIQUE_ID, 'unique_id', 10, 20, $logsetObj->unique_id());
+        $unique_idEle = new \XoopsFormText(_AM_USERLOG_SET_UNIQUE_ID, 'unique_id', 10, 20, $logsetObj->unique_id());
         $unique_idEle->setDescription(_AM_USERLOG_SET_UNIQUE_ID_DSC);
 
         $options_arr        = explode(',', $logsetObj->options());
-        $optionEle          = new XoopsFormCheckBox(_AM_USERLOG_SET_OPTIONS, 'option[]', $options_arr);
+        $optionEle          = new \XoopsFormCheckBox(_AM_USERLOG_SET_OPTIONS, 'option[]', $options_arr);
         $optionEle->columns = 4;
         $headers            = $logsetObj->getOptions('', 'title');
         // always log id and time
@@ -197,20 +200,20 @@ switch ($op) {
         //$optionEle->isRequired();
         //$optionEle->renderValidationJS();
         $check_all = _ALL . ": <input type=\"checkbox\" name=\"option_check\" id=\"option_check\" value=\"0\" onclick=\"xoopsCheckGroup('setting', 'option_check','option[]');\">";
-        //$optiontrayEle = new XoopsFormElementTray(_AM_USERLOG_SET_OPTIONS, "<br\>", 'tray');
-        $optionEle = new XoopsFormLabel(_AM_USERLOG_SET_OPTIONS, $check_all . "<br\>" . $optionEle->render());
+        //$optiontrayEle = new \XoopsFormElementTray(_AM_USERLOG_SET_OPTIONS, "<br\>", 'tray');
+        $optionEle = new \XoopsFormLabel(_AM_USERLOG_SET_OPTIONS, $check_all . "<br\>" . $optionEle->render());
         $optionEle->setDescription(_AM_USERLOG_SET_OPTIONS_DSC);
 
         $scope_arr         = explode(',', $logsetObj->scope());
-        $scopeEle          = new XoopsFormCheckBox(_AM_USERLOG_SET_SCOPE, 'scope[]', $scope_arr);
+        $scopeEle          = new \XoopsFormCheckBox(_AM_USERLOG_SET_SCOPE, 'scope[]', $scope_arr);
         $scopeEle->columns = 4;
         $scopeEle->addOptionArray($dirNames);
         $check_all = _ALL . ": <input type=\"checkbox\" name=\"scope_check\" id=\"scope_check\" value=\"1\" onclick=\"xoopsCheckGroup('setting', 'scope_check','scope[]');\">";
-        $scopeEle  = new XoopsFormLabel(_AM_USERLOG_SET_SCOPE, $check_all . "<br\>" . $scopeEle->render());
+        $scopeEle  = new \XoopsFormLabel(_AM_USERLOG_SET_SCOPE, $check_all . "<br\>" . $scopeEle->render());
         $scopeEle->setDescription(_AM_USERLOG_SET_SCOPE_DSC);
 
-        $submitEle = new XoopsFormButton('', 'post', _SUBMIT, 'submit');
-        $set_idEle = new XoopsFormHidden('set_id', $set_id);
+        $submitEle = new \XoopsFormButton('', 'post', _SUBMIT, 'submit');
+        $set_idEle = new \XoopsFormHidden('set_id', $set_id);
 
         $form->addElement($nameEle, true);
         $form->addElement($logbyEle);

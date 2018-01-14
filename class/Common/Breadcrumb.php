@@ -1,4 +1,5 @@
 <?php namespace XoopsModules\Userlog\Common;
+
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -30,7 +31,7 @@ defined('XOOPS_ROOT_PATH') || exit('XOOPS Root Path not defined');
  */
 class Breadcrumb
 {
-    public $dirname;
+    public  $dirname;
     private $bread = [];
 
     /**
@@ -67,7 +68,7 @@ class Breadcrumb
         }
 
         require_once $GLOBALS['xoops']->path('class/template.php');
-        $breadcrumbTpl = new XoopsTpl();
+        $breadcrumbTpl = new \XoopsTpl();
         $breadcrumbTpl->assign('breadcrumb', $this->bread);
         $html = $breadcrumbTpl->fetch('db:' . $this->dirname . '_common_breadcrumb.tpl');
         unset($breadcrumbTpl);

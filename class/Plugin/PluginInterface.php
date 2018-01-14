@@ -1,4 +1,5 @@
-<?php
+<?php namespace XoopsModules\Userlog\Plugin;
+
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -19,7 +20,7 @@
  * @author          irmtfan (irmtfan@yahoo.com)
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
-interface UserlogPluginInterface
+interface PluginInterface
 {
     /**
      * @param string $subscribe_from Name of the script

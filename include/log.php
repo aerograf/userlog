@@ -8,6 +8,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -19,6 +20,8 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
+use XoopsModules\Userlog;
+
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 // to insure include only once
 if (defined('USERLOG_LOG_DEFINED')) {
@@ -28,12 +31,12 @@ define('USERLOG_LOG_DEFINED', true);
 
 require_once __DIR__ . '/common.php';
 $moduleDirName = basename(dirname(__DIR__));
-$userlog = Userlog::getInstance();
-if (!$userlog->getConfig('status')) {
+$helper        = Userlog\Helper::getInstance();
+if (!$helper->getConfig('status')) {
     return;
 }
-$logsetObj = UserlogSetting::getInstance();
-$statsObj  = UserlogStats::getInstance();
+$logsetObj = Userlog\Setting::getInstance();
+$statsObj  = Userlog\Stats::getInstance();
 $setting   = $scope = '';
 list($setting, $scope) = $logsetObj->getSet();
 
@@ -43,7 +46,7 @@ if (!empty($setting) && strpos($setting, 'active')) {
     if (!empty($scope)) { // empty scope means ALL
         $scope_arr = explode(',', $scope);
         // if this URI is not in scope return
-        if (!in_array($userlog->getLogModule()->dirname(), $scope_arr)) {
+        if (!in_array($helper->getLogModule()->dirname(), $scope_arr)) {
             return true;
         }
     }
@@ -68,12 +71,12 @@ if (!empty($setting) && strpos($setting, 'active')) {
             }
         }
     }
-    if ('system-root' === $userlog->getLogModule()->dirname()) {
-        $userlog->getLogModule()->setVar('dirname', 'system');
+    if ('system-root' === $helper->getLogModule()->dirname()) {
+        $helper->getLogModule()->setVar('dirname', 'system');
     }
 
     // create log
-    $logObj = $userlog->getHandler('log')->create();
+    $logObj = $helper->getHandler('log')->create();
 
     // store: 0,1->db 2->file 3->both
     $logObj->store = !empty($tolog['store_db']) ? $tolog['store_db'] : 0;
@@ -103,10 +106,10 @@ if (!empty($setting) && strpos($setting, 'active')) {
     // store log
     $logObj->store($tolog, true);
     // update all time stats
-    $statsObj->updateAll('log', $userlog->getConfig('probstats')); // default prob = 10
+    $statsObj->updateAll('log', $helper->getConfig('probstats')); // default prob = 10
 }
 // update all time stats
-$statsObj->updateAll('log', $userlog->getConfig('probstatsallhit')); // default prob = 1
+$statsObj->updateAll('log', $helper->getConfig('probstatsallhit')); // default prob = 1
 
 // START to log redirects when $xoopsConfig['redirect_message_ajax'] = true
 // We need to shift the position of userlog to the top of 'system_modules_active' cache file list.
@@ -120,13 +123,13 @@ if (!headers_sent() && isset($xoopsConfig['redirect_message_ajax']) && $xoopsCon
     exit(); // IMO exit() should be commented
 }
 */
-if ($modules_list = XoopsCache::read('system_modules_active')) {
+if ($modules_list = \XoopsCache::read('system_modules_active')) {
     $key = array_search(USERLOG_DIRNAME, $modules_list);
     // if userlog is not in the top
     if (0 != $key) {
         unset($modules_list[$key]);
         array_unshift($modules_list, USERLOG_DIRNAME);
-        XoopsCache::write('system_modules_active', $modules_list);
+        \XoopsCache::write('system_modules_active', $modules_list);
     }
 }
 // END to log redirects when $xoopsConfig['redirect_message_ajax'] = true

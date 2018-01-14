@@ -229,10 +229,7 @@ class Browscap
         $cache_dir     = realpath($cache_dir);
 
         if (false === $cache_dir) {
-            throw new Exception(sprintf(
-                'The cache path %s is invalid. Are you sure that it exists and that you have permission to access it?',
-                                        $old_cache_dir
-            ));
+            throw new Exception(sprintf('The cache path %s is invalid. Are you sure that it exists and that you have permission to access it?', $old_cache_dir));
         }
 
         // Is the cache dir really the directory or is it directly the file?
@@ -300,7 +297,8 @@ class Browscap
         if ($this->shouldCacheBeUpdated()) {
             try {
                 $this->updateCache();
-            } catch (Exception $e) {
+            }
+            catch (Exception $e) {
                 $ini_file = $this->cacheDir . $this->iniFilename;
 
                 if (file_exists($ini_file)) {
@@ -337,8 +335,7 @@ class Browscap
         $chunks   = array_chunk($patterns, self::COUNT_PATTERN);
 
         foreach ($chunks as $chunk) {
-            $longPattern = self::REGEX_DELIMITER . '^(?:' . implode(')|(?:', $chunk) . ')$' . self::REGEX_DELIMITER
-                           . 'i';
+            $longPattern = self::REGEX_DELIMITER . '^(?:' . implode(')|(?:', $chunk) . ')$' . self::REGEX_DELIMITER . 'i';
 
             if (!preg_match($longPattern, $user_agent)) {
                 continue;
@@ -364,10 +361,7 @@ class Browscap
                     // match with numeric replacements
                     array_shift($matches);
 
-                    $matchString = self::COMPRESSION_PATTERN_START . implode(
-                        self::COMPRESSION_PATTERN_DELIMITER,
-                                                                             $matches
-                    );
+                    $matchString = self::COMPRESSION_PATTERN_START . implode(self::COMPRESSION_PATTERN_DELIMITER, $matches);
 
                     if (!isset($patternData[$matchString])) {
                         // partial match - numbers are not present, but everything else is ok
@@ -388,7 +382,7 @@ class Browscap
                 $browser = $value = $browser + unserialize($this->_browsers[$key]);
 
                 while (array_key_exists(3, $value)) {
-                    $value = unserialize($this->_browsers[$value[3]]);
+                    $value   = unserialize($this->_browsers[$value[3]]);
                     $browser += $value;
                 }
 
@@ -647,24 +641,15 @@ class Browscap
 
             if (empty($properties['Comment'])
                 || false !== strpos($userAgent, '*')
-                || false !== strpos($userAgent, '?')
-            ) {
+                || false !== strpos($userAgent, '?')) {
                 $pattern = $this->_pregQuote($userAgent);
 
-                $countMatches = preg_match_all(
-                    self::REGEX_DELIMITER . '\d' . self::REGEX_DELIMITER,
-                    $pattern,
-                                               $matches
-                );
+                $countMatches = preg_match_all(self::REGEX_DELIMITER . '\d' . self::REGEX_DELIMITER, $pattern, $matches);
 
                 if (!$countMatches) {
                     $tmpPatterns[$pattern] = $i;
                 } else {
-                    $compressedPattern = preg_replace(
-                        self::REGEX_DELIMITER . '\d' . self::REGEX_DELIMITER,
-                        '(\d)',
-                                                      $pattern
-                    );
+                    $compressedPattern = preg_replace(self::REGEX_DELIMITER . '\d' . self::REGEX_DELIMITER, '(\d)', $pattern);
 
                     if (!isset($tmpPatterns[$compressedPattern])) {
                         $tmpPatterns[$compressedPattern] = ['first' => $pattern];
@@ -755,25 +740,16 @@ class Browscap
 
             if (empty($properties['Comment'])
                 || false !== strpos($userAgent, '*')
-                || false !== strpos($userAgent, '?')
-            ) {
+                || false !== strpos($userAgent, '?')) {
                 $pattern      = $this->_pregQuote(strtolower($userAgent));
                 $matches      = [];
                 $i            = $position - 1;
-                $countMatches = preg_match_all(
-                    self::REGEX_DELIMITER . '\d' . self::REGEX_DELIMITER,
-                    $pattern,
-                                               $matches
-                );
+                $countMatches = preg_match_all(self::REGEX_DELIMITER . '\d' . self::REGEX_DELIMITER, $pattern, $matches);
 
                 if (!$countMatches) {
                     $tmpPatterns[$pattern] = $i;
                 } else {
-                    $compressedPattern = preg_replace(
-                        self::REGEX_DELIMITER . '\d' . self::REGEX_DELIMITER,
-                        '(\d)',
-                                                      $pattern
-                    );
+                    $compressedPattern = preg_replace(self::REGEX_DELIMITER . '\d' . self::REGEX_DELIMITER, '(\d)', $pattern);
 
                     if (!isset($tmpPatterns[$compressedPattern])) {
                         $tmpPatterns[$compressedPattern] = ['first' => $pattern];
@@ -824,21 +800,7 @@ class Browscap
             $counter++;
         }
 
-        array_multisort(
-            $positionIndex,
-            SORT_ASC,
-            SORT_NUMERIC,
-            $lengthIndex,
-            SORT_DESC,
-            SORT_NUMERIC,
-            $shortLength,
-                        SORT_DESC,
-            SORT_NUMERIC,
-            $patternArray,
-            SORT_ASC,
-            SORT_NUMERIC,
-            $patternList
-        );
+        array_multisort($positionIndex, SORT_ASC, SORT_NUMERIC, $lengthIndex, SORT_DESC, SORT_NUMERIC, $shortLength, SORT_DESC, SORT_NUMERIC, $patternArray, SORT_ASC, SORT_NUMERIC, $patternList);
 
         $this->_patterns = $patternList;
     }
@@ -953,10 +915,7 @@ class Browscap
         $prepared_matches = [];
 
         foreach ($matches as $i => $some_match) {
-            $key = self::COMPRESSION_PATTERN_START . implode(
-                self::COMPRESSION_PATTERN_DELIMITER,
-                                                             array_diff_assoc($some_match, $identical)
-            );
+            $key = self::COMPRESSION_PATTERN_START . implode(self::COMPRESSION_PATTERN_DELIMITER, array_diff_assoc($some_match, $identical));
 
             $prepared_matches[$key] = $i;
         }
@@ -1105,11 +1064,7 @@ class Browscap
      */
     protected function _buildCache()
     {
-        $content = sprintf(
-            "<?php\n\$source_version=%s;\n\$cache_version=%s",
-            "'" . $this->_source_version . "'",
-                           "'" . self::CACHE_FILE_VERSION . "'"
-        );
+        $content = sprintf("<?php\n\$source_version=%s;\n\$cache_version=%s", "'" . $this->_source_version . "'", "'" . self::CACHE_FILE_VERSION . "'");
 
         $content .= ";\n\$properties=";
         $content .= $this->_array2string($this->_properties);
@@ -1180,8 +1135,7 @@ class Browscap
         // Check if it's possible to write to the .ini file.
         if (is_file($path)) {
             if (!is_writable($path)) {
-                throw new Exception('Could not write to "' . $path
-                                    . '" (check the permissions of the current/old ini file).');
+                throw new Exception('Could not write to "' . $path . '" (check the permissions of the current/old ini file).');
             }
         } else {
             // Test writability by creating a file only if one already doesn't exist, so we can safely delete it after
@@ -1191,8 +1145,7 @@ class Browscap
                 fclose($test_file);
                 unlink($path);
             } else {
-                throw new Exception('Could not write to "' . $path
-                                    . '" (check the permissions of the cache directory).');
+                throw new Exception('Could not write to "' . $path . '" (check the permissions of the cache directory).');
             }
         }
 
@@ -1204,8 +1157,7 @@ class Browscap
         }
 
         if (false !== strpos('rate limit', $content)) {
-            throw new Exception('Could not load .ini content from "' . $url
-                                . '" because the rate limit is exeeded for your IP');
+            throw new Exception('Could not load .ini content from "' . $url . '" because the rate limit is exeeded for your IP');
         }
 
         // replace opening and closing php and asp tags
@@ -1363,7 +1315,7 @@ class Browscap
                         return $file;
                     }
                 }// else try with the next possibility (break omitted)
-                // no break
+            // no break
             case self::UPDATE_FSOCKOPEN:
                 if (function_exists('fsockopen')) {
                     $remote_url     = parse_url($url);
@@ -1378,14 +1330,7 @@ class Browscap
                     } else {
                         $context = $this->_getStreamContext();
 
-                        $remote_handler = stream_socket_client(
-                            $url,
-                            $errno,
-                            $errstr,
-                            $this->timeout,
-                                                               STREAM_CLIENT_CONNECT,
-                            $context
-                        );
+                        $remote_handler = stream_socket_client($url, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
                     }
 
                     if ($remote_handler) {
@@ -1395,12 +1340,7 @@ class Browscap
                             $remote_url['path'] .= '?' . $remote_url['query'];
                         }
 
-                        $out = sprintf(
-                            self::REQUEST_HEADERS,
-                            $remote_url['path'],
-                            $remote_url['host'],
-                                       $this->_getUserAgent()
-                        );
+                        $out = sprintf(self::REQUEST_HEADERS, $remote_url['path'], $remote_url['host'], $this->_getUserAgent());
 
                         fwrite($remote_handler, $out);
 
@@ -1423,7 +1363,7 @@ class Browscap
                         }
                     }
                 }// else try with the next possibility
-                // no break
+            // no break
             case self::UPDATE_CURL:
                 if (extension_loaded('curl')) { // make sure curl is loaded
                     $ch = curl_init($url);
@@ -1440,7 +1380,7 @@ class Browscap
                         return $file;
                     }
                 }// else try with the next possibility
-                // no break
+            // no break
             case false:
                 throw new Exception('Your server can\'t connect to external resources. Please update the file manually.');
         }

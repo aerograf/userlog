@@ -8,6 +8,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -18,6 +19,8 @@
  * @author          irmtfan (irmtfan@yahoo.com)
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
+
+use XoopsModules\Userlog;
 
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 require_once __DIR__ . '/../include/common.php';
@@ -43,7 +46,7 @@ xoops_loadLanguage('admin', USERLOG_DIRNAME);
  */
 function userlog_views_show($options)
 {
-    $loglogObj = UserlogLog::getInstance();
+    $loglogObj = Userlog\Log::getInstance();
     $module    = [];
     if (!empty($options[1])) {
         $options_views = explode(',', $options[1]); // item views in where claus eg: news-storyid, newbb-topic_id, news-storytopic
@@ -78,14 +81,14 @@ function userlog_views_edit($options)
 {
     // require_once XOOPS_ROOT_PATH . "/class/blockform.php"; //reserve for 2.6
     xoops_load('XoopsFormLoader');
-    // $form = new XoopsBlockForm(); //reserve for 2.6
-    $form = new XoopsThemeForm(_AM_USERLOG_VIEW, 'views', '');
+    // $form = new \XoopsBlockForm(); //reserve for 2.6
+    $form = new \XoopsThemeForm(_AM_USERLOG_VIEW, 'views', '');
 
     /** @var XoopsModuleHandler $moduleHandler */
     $moduleHandler = xoops_getHandler('module');
-    $criteria      = new CriteriaCompo();
-    $criteria->add(new Criteria('hasnotification', 1));
-    $criteria->add(new Criteria('isactive', 1));
+    $criteria      = new \CriteriaCompo();
+    $criteria->add(new \Criteria('hasnotification', 1));
+    $criteria->add(new \Criteria('isactive', 1));
     $modules  = $moduleHandler->getObjects($criteria, true);
     $hasviews = [];
     foreach ($modules as $module) {
@@ -100,18 +103,18 @@ function userlog_views_edit($options)
 
     $i = 0;
     // number of items to display element
-    $numitemsEle = new XoopsFormText(_AM_USERLOG_ITEMS_NUM, "options[{$i}]", 10, 255, (int)$options[$i]);
+    $numitemsEle = new \XoopsFormText(_AM_USERLOG_ITEMS_NUM, "options[{$i}]", 10, 255, (int)$options[$i]);
 
     ++$i;
     // views element
     $options_views     = explode(',', $options[$i]);
-    $viewsEle          = new XoopsFormCheckBox(_AM_USERLOG_ITEMS, "options[{$i}][]", !empty($options_views) ? $options_views : 0);
+    $viewsEle          = new \XoopsFormCheckBox(_AM_USERLOG_ITEMS, "options[{$i}][]", !empty($options_views) ? $options_views : 0);
     $viewsEle->columns = 3;
     if (!empty($hasviews)) {
         $viewsEle->addOptionArray($hasviews);
         $viewsEle->setExtra("onchange = \"validate('options[{$i}][]','checkbox', true)\""); // prevent user select no option
         $check_all = _ALL . ": <input type=\"checkbox\" name=\"item_check\" id=\"item_check\" value=\"1\" onclick=\"xoopsCheckGroup('blockform', 'item_check','options[{$i}][]');\">"; // blockform is the main form
-        $viewsEle  = new XoopsFormLabel(_AM_USERLOG_ITEMS, $check_all . "<br\>" . $viewsEle->render());
+        $viewsEle  = new \XoopsFormLabel(_AM_USERLOG_ITEMS, $check_all . "<br\>" . $viewsEle->render());
     } else {
         // prevent to select
         $viewsEle->addOption(0, _NONE);
@@ -121,27 +124,27 @@ function userlog_views_edit($options)
     $viewsEle->setDescription(_AM_USERLOG_ITEMS_DSC);
 
     ++$i;
-    $timeEle = new XoopsFormText(_AM_USERLOG_LOG_TIMEGT, "options[{$i}]", 10, 255, $options[$i]);
+    $timeEle = new \XoopsFormText(_AM_USERLOG_LOG_TIMEGT, "options[{$i}]", 10, 255, $options[$i]);
     $timeEle->setDescription(_AM_USERLOG_LOG_TIMEGT_FORM);
 
     ++$i;
-    $userRadioEle = new XoopsFormRadio(_AM_USERLOG_UID, "options[{$i}]", $options[$i]);
+    $userRadioEle = new \XoopsFormRadio(_AM_USERLOG_UID, "options[{$i}]", $options[$i]);
     $userRadioEle->addOption(-1, _ALL);
     $userRadioEle->addOption(($options[$i] != -1) ? $options[$i] : 0, _SELECT); // if no user in selection box it select uid=0 anon users
     $userRadioEle->setExtra("onchange=\"var el=document.getElementById('options[{$i}]'); el.disabled=(this.id == 'options[{$i}]1'); if (!el.value) {el.value= this.value}\""); // if user dont select any option it select "all"
-    $userSelectEle = new XoopsFormSelectUser(_AM_USERLOG_UID, "options[{$i}]", true, explode(',', $options[$i]), 3, true);
-    $userEle       = new XoopsFormLabel(_AM_USERLOG_UID, $userRadioEle->render() . $userSelectEle->render());
+    $userSelectEle = new \XoopsFormSelectUser(_AM_USERLOG_UID, "options[{$i}]", true, explode(',', $options[$i]), 3, true);
+    $userEle       = new \XoopsFormLabel(_AM_USERLOG_UID, $userRadioEle->render() . $userSelectEle->render());
 
     ++$i;
-    $groupRadioEle = new XoopsFormRadio(_AM_USERLOG_GROUPS, "options[{$i}]", !empty($options[$i]));
+    $groupRadioEle = new \XoopsFormRadio(_AM_USERLOG_GROUPS, "options[{$i}]", !empty($options[$i]));
     $groupRadioEle->addOption(0, _ALL);
     $groupRadioEle->addOption(!empty($options[$i]) ? $options[$i] : 2, _SELECT); // if no group in selection box it select gid=2 registered users
     $groupRadioEle->setExtra("onchange=\"var el=document.getElementById('options[{$i}]'); el.disabled=(this.id == 'options[{$i}]1'); if (!el.value) {el.value= this.value}\""); // if group dont select any option it select "all"
-    $groupSelectEle = new XoopsFormSelectGroup(_AM_USERLOG_GROUPS, "options[{$i}]", true, explode(',', $options[$i]), 3, true);
-    $groupEle       = new XoopsFormLabel(_AM_USERLOG_GROUPS, $groupRadioEle->render() . $groupSelectEle->render());
+    $groupSelectEle = new \XoopsFormSelectGroup(_AM_USERLOG_GROUPS, "options[{$i}]", true, explode(',', $options[$i]), 3, true);
+    $groupEle       = new \XoopsFormLabel(_AM_USERLOG_GROUPS, $groupRadioEle->render() . $groupSelectEle->render());
 
     ++$i;
-    $sortEle = new XoopsFormSelect(_AM_USERLOG_SORT, "options[{$i}]", $options[$i]);
+    $sortEle = new \XoopsFormSelect(_AM_USERLOG_SORT, "options[{$i}]", $options[$i]);
     $sortEle->addOptionArray([
                                  'count'        => _AM_USERLOG_VIEW,
                                  'module'       => _AM_USERLOG_MODULE,
@@ -151,7 +154,7 @@ function userlog_views_edit($options)
     $sortEle->setDescription(_AM_USERLOG_SORT_DSC);
 
     ++$i;
-    $orderEle = new XoopsFormSelect(_AM_USERLOG_ORDER, "options[{$i}]", $options[$i]);
+    $orderEle = new \XoopsFormSelect(_AM_USERLOG_ORDER, "options[{$i}]", $options[$i]);
     $orderEle->addOption('DESC', _DESCENDING);
     $orderEle->addOption('ASC', _ASCENDING);
     $orderEle->setDescription(_AM_USERLOG_ORDER_DSC);

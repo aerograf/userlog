@@ -1,4 +1,5 @@
-<?php
+<?php namespace XoopsModules\Userlog;
+
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -19,30 +20,33 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
+use XoopsModules\Userlog;
+
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 require_once __DIR__ . '/../include/common.php';
 
-xoops_loadLanguage('admin', USERLOG_DIRNAME);
+Userlog\Helper::getInstance()->loadLanguage('admin');
+//xoops_loadLanguage('admin', USERLOG_DIRNAME);
 xoops_load('XoopsFormLoader');
 
 /**
- * Class UserlogSetting
+ * Class Setting
  */
-class UserlogSetting extends XoopsObject
+class Setting extends \XoopsObject
 {
     /**
      * @var string
      */
     public $all_logby = ['uid' => _AM_USERLOG_UID, 'gid' => _AM_USERLOG_SET_GID, 'ip' => _AM_USERLOG_SET_IP];
 
-    public $userlog = null;
+    public $helper = null;
 
     /**
      * constructor
      */
     public function __construct()
     {
-        $this->userlog = Userlog::getInstance();
+        $this->helper = Userlog\Helper::getInstance();
         $this->initVar('set_id', XOBJ_DTYPE_INT, null, false);
         $this->initVar('name', XOBJ_DTYPE_TXTBOX, null, false, 100);
         $this->initVar('logby', XOBJ_DTYPE_TXTBOX, null, true, 10);
@@ -65,7 +69,7 @@ class UserlogSetting extends XoopsObject
     }
 
     /**
-     * @return UserlogSetting
+     * @return Setting
      */
     public static function getInstance()
     {
@@ -111,22 +115,23 @@ class UserlogSetting extends XoopsObject
      */
     public function getSet()
     {
+        xoops_load('xoopsuserutility');
         $options = '';
         // if uid setting exist in File
-        $unique_uid = $this->userlog->getUser() ? $this->userlog->getUser()->getVar('uid') : 0;
+        $unique_uid = $this->helper->getUser() ? $this->helper->getUser()->getVar('uid') : 0;
         if ($options = $this->getFile('uid', $unique_uid)) {
             return $options;
         }
 
         // if gid setting exist in File
-        $unique_gid = $this->userlog->getUser() ? $this->userlog->getUser()->getGroups() : [XOOPS_GROUP_ANONYMOUS];
+        $unique_gid = $this->helper->getUser() ? $this->helper->getUser()->getGroups() : [XOOPS_GROUP_ANONYMOUS];
         foreach ($unique_gid as $gid) {
             if ($options = $this->getFile('gid', $gid)) {
                 return $options;
             }
         }
         // if ip setting exist in File
-        $unique_ip = XoopsUserUtility::getIP(); // ip as int
+        $unique_ip = \XoopsUserUtility::getIP(); // ip as int
         if ($options = $this->getFile('ip', $unique_ip)) {
             return $options;
         }
@@ -136,11 +141,11 @@ class UserlogSetting extends XoopsObject
         }
         ///////////////////////////////////////////////////////////
         // check probability
-        if (!$this->userlog->probCheck($this->userlog->getConfig('probset'))) {
+        if (!$this->helper->probCheck($this->helper->getConfig('probset'))) {
             return false;
         }
         // database get All is better for performance???
-        $logsetsObj = $this->userlog->getHandler('setting')->getAll();
+        $logsetsObj = $this->helper->getHandler('setting')->getAll();
         if (empty($logsetsObj)) {
             return false;
         } // if not set in db return false
@@ -158,8 +163,7 @@ class UserlogSetting extends XoopsObject
                 || // if gid setting exist in db return it
                 in_array($sLogbyId, $gid_unique_gid)
                 || // if ip setting exist in db return it
-                $sLogbyId == $ip_unique_ip
-            ) {
+                $sLogbyId == $ip_unique_ip) {
                 $sets = [$setObj->options(), $setObj->scope()];
                 $this->setFile($sLogby, $sUnique_id, $sets); // build cache
 
@@ -184,7 +188,7 @@ class UserlogSetting extends XoopsObject
      */
     public function setDb($force = true)
     {
-        $ret = $this->userlog->getHandler('setting')->insert($this, $force);
+        $ret = $this->helper->getHandler('setting')->insert($this, $force);
         $this->unsetNew();
 
         return $ret;
@@ -240,8 +244,8 @@ class UserlogSetting extends XoopsObject
         $name = $name ?: (string)time();
         $key  = USERLOG_DIRNAME . "_{$name}";
 
-        //$cacheHandler = XoopsCache::config($key, array('path' => XOOPS_VAR_PATH . '/caches/xoops_cache/userlog'));
-        return XoopsCache::write($key, $data);
+        //$cacheHandler = \XoopsCache::config($key, array('path' => XOOPS_VAR_PATH . '/caches/xoops_cache/userlog'));
+        return \XoopsCache::write($key, $data);
     }
 
     /**
@@ -257,7 +261,7 @@ class UserlogSetting extends XoopsObject
         }
         $key = USERLOG_DIRNAME . "_{$name}";
 
-        return XoopsCache::read($key);
+        return \XoopsCache::read($key);
     }
 
     /**
@@ -273,7 +277,7 @@ class UserlogSetting extends XoopsObject
         }
         $key = USERLOG_DIRNAME . "_{$name}";
 
-        return XoopsCache::delete($key);
+        return \XoopsCache::delete($key);
     }
 
     /**
@@ -286,12 +290,12 @@ class UserlogSetting extends XoopsObject
     {
         $V = strtolower($V);
 
-        if ($this->userlog->getUser()) {
-            $uid        = $this->userlog->getUser()->getVar('uid');
-            $uname      = $this->userlog->getUser()->getVar('uname');
-            $last_login = $this->userlog->getUser()->getVar('last_login');
-            $admin      = $this->userlog->getUser()->isAdmin();
-            $groups     = 'g' . implode('g', array_unique($this->userlog->getUser()->getGroups())); // g1g2
+        if ($this->helper->getUser()) {
+            $uid        = $this->helper->getUser()->getVar('uid');
+            $uname      = $this->helper->getUser()->getVar('uname');
+            $last_login = $this->helper->getUser()->getVar('last_login');
+            $admin      = $this->helper->getUser()->isAdmin();
+            $groups     = 'g' . implode('g', array_unique($this->helper->getUser()->getGroups())); // g1g2
         } else {
             $uid        = 0;
             $uname      = '';
@@ -300,7 +304,7 @@ class UserlogSetting extends XoopsObject
             $groups     = 'g' . XOOPS_GROUP_ANONYMOUS; // g3
         }
         $tempUserLog = explode('/', $_SERVER['PHP_SELF']);
-        $options = [
+        $options     = [
             'log_id'         => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_LOG_ID,
@@ -375,12 +379,12 @@ class UserlogSetting extends XoopsObject
             'module'         => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_MODULE,
-                'value' => $this->userlog->getLogModule()->getVar('dirname')
+                'value' => $this->helper->getLogModule()->getVar('dirname')
             ],
             'module_name'    => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_MODULE_NAME,
-                'value' => $this->userlog->getLogModule()->getVar('name')
+                'value' => $this->helper->getLogModule()->getVar('name')
             ],
             'item_name'      => [
                 'type'  => 'text',
@@ -480,10 +484,10 @@ class UserlogSetting extends XoopsObject
                 'value' => 1 // for item_name and item_id
             ]
         ];
-        $ret     = $this->userlog->getFromKeys($options, $option);
+        $ret         = $this->helper->getFromKeys($options, $option);
         // patch Login/Register History
         if (isset($ret['post']['value'])) {
-            $ret['post']['value'] = $this->userlog->patchLoginHistory($ret['post']['value'], $uid, !empty($ret['unset_pass']['value']));
+            $ret['post']['value'] = $this->helper->patchLoginHistory($ret['post']['value'], $uid, !empty($ret['unset_pass']['value']));
         }
         if (empty($V)) {
             return $ret;
@@ -507,8 +511,7 @@ class UserlogSetting extends XoopsObject
                     'store_file',
                     'store_db',
                     'views'
-                ])
-            ) {
+                ])) {
                 continue;
             }
             // check values
@@ -527,7 +530,7 @@ class UserlogSetting extends XoopsObject
      */
     public function logForm($options = null)
     {
-        $form    = new XoopsThemeForm(_AM_USERLOG_LOGFORM, 'logs', 'logs.php', 'get');
+        $form    = new \XoopsThemeForm(_AM_USERLOG_LOGFORM, 'logs', 'logs.php', 'get');
         $headers = $this->getOptions('', 'title');
         unset($headers['active'], $headers['inside'], $headers['outside'], $headers['unset_pass'], $headers['store_db'], $headers['store_file'], $headers['views']);
         $el          = [];
@@ -537,7 +540,7 @@ class UserlogSetting extends XoopsObject
                 case 'pageadmin':
                 case 'admin':
                     $defEl    = '_AM_USERLOG_' . strtoupper($ele); // if constant is defined in translation - it is good for now
-                    $el[$ele] = new XoopsFormRadio(constant($defEl), "options[{$ele}]", isset($options[$ele]) ? $options[$ele] : '');
+                    $el[$ele] = new \XoopsFormRadio(constant($defEl), "options[{$ele}]", isset($options[$ele]) ? $options[$ele] : '');
                     $el[$ele]->addOption(1, _YES);
                     $el[$ele]->addOption(0, _NO);
                     $el[$ele]->addOption('', _ALL);
@@ -548,7 +551,7 @@ class UserlogSetting extends XoopsObject
                     foreach ($query_types as $type) {
                         $defEl = '_AM_USERLOG_' . strtoupper($ele . $type); // if constant is defined in translation - it is good for now
                         if (defined($defEl . '_FORM')) {
-                            $el[$ele . $type] = new XoopsFormText(constant($defEl), "options[{$ele}{$type}]", 10, 255, !empty($options[$ele . $type]) ? $options[$ele . $type] : null);
+                            $el[$ele . $type] = new \XoopsFormText(constant($defEl), "options[{$ele}{$type}]", 10, 255, !empty($options[$ele . $type]) ? $options[$ele . $type] : null);
                             $defEle           = '_AM_USERLOG_' . strtoupper($ele);
                             $el[$ele . $type]->setDescription(sprintf(constant($defEl . '_FORM'), constant($defEle), constant($defEle)));
                             $form->addElement($el[$ele . $type]);
@@ -575,57 +578,5 @@ class UserlogSetting extends XoopsObject
         }
 
         return count($files);
-    }
-}
-
-/**
- * Class UserlogSettingHandler
- */
-class UserlogSettingHandler extends XoopsPersistableObjectHandler
-{
-    public $userlog = null;
-
-    /**
-     * @param null|XoopsDatabase $db
-     */
-    public function __construct(XoopsDatabase $db)
-    {
-        $this->userlog = Userlog::getInstance();
-        parent::__construct($db, USERLOG_DIRNAME . '_set', 'UserlogSetting', 'set_id', 'logby');
-    }
-
-    /**
-     * @param int    $limit
-     * @param int    $start
-     * @param null   $otherCriteria
-     * @param string $sort
-     * @param string $order
-     * @param null   $fields
-     * @param bool   $asObject
-     * @param bool   $id_as_key
-     *
-     * @return mixed
-     */
-    public function getSets(
-        $limit = 0,
-        $start = 0,
-        $otherCriteria = null,
-        $sort = 'set_id',
-        $order = 'DESC',
-        $fields = null,
-        $asObject = true,
-        $id_as_key = true
-    ) {
-        $criteria = new CriteriaCompo();
-        if (!empty($otherCriteria)) {
-            $criteria->add($otherCriteria);
-        }
-        $criteria->setLimit($limit);
-        $criteria->setStart($start);
-        $criteria->setSort($sort);
-        $criteria->setOrder($order);
-        $ret = $this->getAll($criteria, $fields, $asObject, $id_as_key);
-
-        return $ret;
     }
 }
