@@ -24,7 +24,7 @@
 use Xmf\Request;
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/../include/common.php';
 
 /**
@@ -159,8 +159,8 @@ class Log extends \XoopsObject
         $modules = [],
         $since = 0,
         $users = [],
-        $groups = [])
-    {
+        $groups = []
+    ) {
         if (!empty($modules)) {
             $criteriaModule = new \CriteriaCompo();
             foreach ($modules as $module_dir => $items) {
@@ -512,8 +512,8 @@ class Log extends \XoopsObject
         $start = 0,
         $options = null,
         $sort = 'log_time',
-        $order = 'DESC')
-    {
+        $order = 'DESC'
+    ) {
         $logs    = [];
         $logsStr = $this->readFiles($log_files);
         // if no logs return empty array and total = 0
@@ -942,9 +942,9 @@ class Log extends \XoopsObject
         }
         $zipFile = $zipFolder . '/' . $zipFileName;
 
-        $zip = new ZipArchive();
+        $zip = new \ZipArchive();
 
-        if (true !== $zip->open($zipFile, ZipArchive::CREATE)) {
+        if (true !== $zip->open($zipFile, \ZipArchive::CREATE)) {
             $this->setErrors("Cannot open ({$zipFile})");
 
             return false;
@@ -969,7 +969,7 @@ class Log extends \XoopsObject
      * @param bool  $multi
      * @param int   $size
      *
-     * @return XoopsFormSelect
+     * @return \XoopsFormSelect
      */
     public function buildFileSelectEle($currentFile = [], $multi = false, $size = 3)
     {

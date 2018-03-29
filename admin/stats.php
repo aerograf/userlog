@@ -172,7 +172,7 @@ foreach ($modules as $dir) {
 $loglogObj = Userlog\Log::getInstance();
 
 // get items views
-$items = $loglogObj->getViews($limitentry, $startentry, $sortentry, $orderentry, $module, $log_timeGT, ($users[0] != -1) ? $users : [], (0 != $groups[0]) ? $groups : []);
+$items = $loglogObj->getViews($limitentry, $startentry, $sortentry, $orderentry, $module, $log_timeGT, (-1 != $users[0]) ? $users : [], (0 != $groups[0]) ? $groups : []);
 $GLOBALS['xoopsTpl']->assign('sortentry', $sortentry);
 $GLOBALS['xoopsTpl']->assign('items', $items);
 // SRART form
@@ -217,7 +217,7 @@ $timeEl->setDescription(_AM_USERLOG_LOG_TIMEGT_FORM);
 
 $userRadioEl = new \XoopsFormRadio(_AM_USERLOG_UID, 'users', $users[0]);
 $userRadioEl->addOption(-1, _ALL);
-$userRadioEl->addOption(($users[0] != -1) ? $users[0] : 0, _SELECT); // if no user in selection box it select uid=0 anon users
+$userRadioEl->addOption((-1 != $users[0]) ? $users[0] : 0, _SELECT); // if no user in selection box it select uid=0 anon users
 $userRadioEl->setExtra("onchange=\"var el=document.getElementById('users'); el.disabled=(this.id == 'users1'); if (!el.value) {el.value= this.value}\""); // if user dont select any option it select "all"
 $userSelectEl = new \XoopsFormSelectUser(_AM_USERLOG_UID, 'users', true, $users, 3, true);
 $userEl       = new \XoopsFormLabel(_AM_USERLOG_UID, $userRadioEl->render() . $userSelectEl->render());

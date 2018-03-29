@@ -24,7 +24,7 @@ use XoopsModules\Userlog;
 
 // Important note: use $eleNamePrefix = "options" because it is hard-coded in XOOPS CORE > BLOCKS
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/../include/common.php';
 
 xoops_loadLanguage('admin', USERLOG_DIRNAME);
@@ -48,7 +48,7 @@ class Query
     }
 
     /**
-     * @return UserlogQuery
+     * @return Userlog\Query
      */
     public static function getInstance()
     {
@@ -282,7 +282,7 @@ class Query
         if (!empty($args[1])) {
             $refLike .= "module={$args[1]}";
         }
-        $criteria->add(new \Criteria('referer', "{$refLike}", 'LIKE'), 'AND'); // modules admin
+        $criteria->add(new \Criteria('referer', ($refLike), 'LIKE'), 'AND'); // modules admin
 
         $modulesadminObjs = $this->helper->getHandler('log')->getLogs($args[0], 0, $criteria, 'log_id', 'DESC', ['log_id', 'log_time', 'referer'], true); // true => as Obj
         if (empty($modulesadminObjs)) {

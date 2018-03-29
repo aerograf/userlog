@@ -121,7 +121,7 @@ if ('del' === $opentry && !empty($confirm)) {
             redirect_header('logs.php?op=' . $query_entry, 10, sprintf(_AM_USERLOG_LOG_DELETE_SUCCESS_QUERY, $numDel, $query_page));
         }
         redirect_header('logs.php?op=' . $query_entry . (!empty($query_page) ? '&amp;' . $query_page : ''), 1, _AM_USERLOG_LOG_DELETE_ERROR);
-        // for file
+    // for file
     } else {
         redirect_header('logs.php?op=' . $query_entry . (!empty($query_page) ? '&amp;' . $query_page : ''), 1, _AM_USERLOG_LOG_DELETE_ERROR);
     }

@@ -22,7 +22,7 @@
 
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 // to insure include only once
 if (defined('USERLOG_LOG_DEFINED')) {
     return;

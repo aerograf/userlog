@@ -22,7 +22,7 @@
 
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/../include/common.php';
 
 if (defined('USERLOG_BLOCK_VIEWS_DEFINED')) {
@@ -61,7 +61,7 @@ function userlog_views_show($options)
             $module[$module_script[0]]['item_name'][] = $module_script_item[1];
         }
     }
-    $users  = ($options[3] != -1) ? explode(',', $options[3]) : [];
+    $users  = (-1 != $options[3]) ? explode(',', $options[3]) : [];
     $groups = !empty($options[4]) ? explode(',', $options[4]) : [];
 
     $items          = $loglogObj->getViews($options[0], 0, $options[5], $options[6], $module, $options[2], $users, $groups);
@@ -130,7 +130,7 @@ function userlog_views_edit($options)
     ++$i;
     $userRadioEle = new \XoopsFormRadio(_AM_USERLOG_UID, "options[{$i}]", $options[$i]);
     $userRadioEle->addOption(-1, _ALL);
-    $userRadioEle->addOption(($options[$i] != -1) ? $options[$i] : 0, _SELECT); // if no user in selection box it select uid=0 anon users
+    $userRadioEle->addOption((-1 != $options[$i]) ? $options[$i] : 0, _SELECT); // if no user in selection box it select uid=0 anon users
     $userRadioEle->setExtra("onchange=\"var el=document.getElementById('options[{$i}]'); el.disabled=(this.id == 'options[{$i}]1'); if (!el.value) {el.value= this.value}\""); // if user dont select any option it select "all"
     $userSelectEle = new \XoopsFormSelectUser(_AM_USERLOG_UID, "options[{$i}]", true, explode(',', $options[$i]), 3, true);
     $userEle       = new \XoopsFormLabel(_AM_USERLOG_UID, $userRadioEle->render() . $userSelectEle->render());

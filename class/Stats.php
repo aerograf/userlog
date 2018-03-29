@@ -22,7 +22,7 @@
 
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/../include/common.php';
 xoops_loadLanguage('admin', USERLOG_DIRNAME);
 
@@ -113,8 +113,8 @@ class Stats extends \XoopsObject
         $limit = 0,
         $sort = 'stats_value',
         $order = 'DESC',
-        $otherCriteria = null)
-    {
+        $otherCriteria = null
+    ) {
         $criteria = new \CriteriaCompo();
         if (!empty($type)) {
             $typeArr = is_array($type) ? $type : [$type];

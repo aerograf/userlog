@@ -297,8 +297,7 @@ class Browscap
         if ($this->shouldCacheBeUpdated()) {
             try {
                 $this->updateCache();
-            }
-            catch (Exception $e) {
+            } catch (\Exception $e) {
                 $ini_file = $this->cacheDir . $this->iniFilename;
 
                 if (file_exists($ini_file)) {

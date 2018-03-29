@@ -24,7 +24,7 @@
 use Xmf\Request;
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/../include/common.php';
 
 /**
@@ -63,8 +63,8 @@ class LogHandler extends \XoopsPersistableObjectHandler
         $order = 'DESC',
         $fields = null,
         $asObject = true,
-        $id_as_key = true)
-    {
+        $id_as_key = true
+    ) {
         $criteria = new \CriteriaCompo();
         if (!empty($otherCriteria)) {
             $criteria->add($otherCriteria);
@@ -212,7 +212,7 @@ class LogHandler extends \XoopsPersistableObjectHandler
             return false;
         }
         $ret = [];
-        while ($myrow = $this->db->fetchArray($result)) {
+        while (false !== ($myrow = $this->db->fetchArray($result))) {
             $ret[$myrow['Field']] = $myrow;
         }
 
@@ -298,7 +298,7 @@ class LogHandler extends \XoopsPersistableObjectHandler
             return false;
         }
         $ret = [];
-        while ($myrow = $this->db->fetchArray($result)) {
+        while (false !== ($myrow = $this->db->fetchArray($result))) {
             $ret[] = $myrow;
         }
 
@@ -406,7 +406,7 @@ class LogHandler extends \XoopsPersistableObjectHandler
         } // the table for this object
         // check if database prefix is not added yet and then add it!!!
         if (0 !== strpos($table, $this->db->prefix() . '_')) {
-            $table = $this->db->prefix("{$table}");
+            $table = $this->db->prefix((string)($table));
         }
         $result = $this->db->queryF("SHOW TABLES LIKE '{$table}'");
         $found  = $this->db->getRowsNum($result);
@@ -431,7 +431,7 @@ class LogHandler extends \XoopsPersistableObjectHandler
         } // table is current || oldTable is not exist
         // check if database prefix is not added yet and then add it!!!
         if (0 !== strpos($oldTable, $this->db->prefix() . '_')) {
-            $oldTable = $this->db->prefix("{$oldTable}");
+            $oldTable = $this->db->prefix((string)($oldTable));
         }
         if (!$result = $this->db->queryF("ALTER TABLE {$oldTable} RENAME {$this->table}")) {
             xoops_error($this->db->error() . '<br>' . $sql);

@@ -19,7 +19,9 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+use XoopsModules\Userlog;
+
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/../include/common.php';
 
 if (defined('USERLOG_BLOCK_STATS_TYPE_DEFINED')) {
@@ -38,7 +40,7 @@ xoops_loadLanguage('admin', USERLOG_DIRNAME);
  */
 function userlog_stats_type_show($options)
 {
-    $queryObj = UserlogQuery::getInstance();
+    $queryObj = Userlog\Query::getInstance();
 
     return $queryObj->stats_typeShow($options);
 }
@@ -50,7 +52,7 @@ function userlog_stats_type_show($options)
  */
 function userlog_stats_type_edit($options)
 {
-    $queryObj = UserlogQuery::getInstance();
+    $queryObj = Userlog\Query::getInstance();
 
     return $queryObj->stats_typeForm($options);
 }

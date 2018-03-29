@@ -33,7 +33,7 @@ $moduleDirNameUpper = strtoupper($moduleDirName); //$capsDirName
 $db      = \XoopsDatabaseFactory::getDatabaseConnection();
 $helper  = Userlog\Helper::getInstance();
 $utility = new Userlog\Utility();
-//$configurator = new Userlog\common\Configurator();
+//$configurator = new Userlog\Common\Configurator();
 
 $helper->loadLanguage('common');
 

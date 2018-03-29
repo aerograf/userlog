@@ -24,7 +24,7 @@ use Xmf\Request;
 use XoopsModules\Userlog\Plugin;
 use XoopsModules\Newbb;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 
 /**
  * Class NewbbUserlogPlugin
@@ -68,7 +68,7 @@ class NewbbUserlogPlugin extends Plugin\PluginAbstract implements Plugin\PluginI
         switch ($subscribe_from) {
             case 'viewtopic.php':
 
-                /** @var \Newbb\TopicHandler $topicHandler */
+                /** @var Newbb\TopicHandler $topicHandler */
                 $topicHandler = Newbb\Helper::getInstanc()->getHandlre('Topic');
                 $post_id      = Request::getInt('post_id', 0);
                 $move         = Request::getString('move', '', 'GET');

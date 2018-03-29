@@ -22,7 +22,7 @@
 
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/../include/common.php';
 
 xoops_loadLanguage('admin', USERLOG_DIRNAME);
@@ -64,8 +64,8 @@ class SettingHandler extends \XoopsPersistableObjectHandler
         $order = 'DESC',
         $fields = null,
         $asObject = true,
-        $id_as_key = true)
-    {
+        $id_as_key = true
+    ) {
         $criteria = new \CriteriaCompo();
         if (!empty($otherCriteria)) {
             $criteria->add($otherCriteria);

@@ -23,8 +23,9 @@
 
 use Xmf\Request;
 use XoopsModules\Userlog;
+use phpbrowscap;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/phpbrowscap/Browscap.php';
 
 // The Browscap class is in the phpbrowscap namespace, so import it
@@ -91,7 +92,7 @@ class Helper extends \Xmf\Module\Helper
     public function getModules($dirnames = [], $otherCriteria = null, $asObj = false)
     {
         // get all dirnames
-        /** @var XoopsModuleHandler $moduleHandler */
+        /** @var \XoopsModuleHandler $moduleHandler */
         $moduleHandler = xoops_getHandler('module');
         $criteria      = new \CriteriaCompo();
         if (count($dirnames) > 0) {
@@ -368,7 +369,11 @@ class Helper extends \Xmf\Module\Helper
         }
         // Creates a new Browscap object (loads or creates the cache)
         // $bc = new Browscap('path/to/the/cache/dir');
-        $this->browscap = new Browscap($browscapCache);
+        try {
+            $this->browscap = new phpbrowscap\Browscap($browscapCache);
+        }
+        catch (phpbrowscap\Exception $e) {
+        }
         $this->addLog('INIT BrowsCap');
 
         return true;
