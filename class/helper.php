@@ -47,7 +47,7 @@ class Helper extends \Xmf\Module\Helper
     /**
      * @param $debug
      */
-    protected function __construct($debug)
+    public function __construct($debug)
     {
         $moduleDirName      = basename(dirname(__DIR__));
         $this->debug        = $debug;
