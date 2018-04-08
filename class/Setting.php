@@ -20,6 +20,7 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
+use Xmf\Request;
 use XoopsModules\Userlog;
 
 defined('XOOPS_ROOT_PATH') || die('Restricted access');
@@ -363,7 +364,7 @@ class Setting extends \XoopsObject
             'referer'        => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_REFERER,
-                'value' => !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''
+                'value' => !empty(Request::getString('HTTP_REFERER', '', 'SERVER')) ? Request::getString('HTTP_REFERER', '', 'SERVER') : ''
             ],
             'pagetitle'      => [
                 'type'  => 'text',

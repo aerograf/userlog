@@ -1325,15 +1325,15 @@ class Browscap
 
                     if (empty($contextOptions)) {
                         $port           = (empty($remote_url['port']) ? 80 : $remote_url['port']);
-                        $remote_handler = fsockopen($remote_url['host'], $port, $errno, $errstr, $this->timeout);
+                        $remoteHandler = fsockopen($remote_url['host'], $port, $errno, $errstr, $this->timeout);
                     } else {
                         $context = $this->_getStreamContext();
 
-                        $remote_handler = stream_socket_client($url, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
+                        $remoteHandler = stream_socket_client($url, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
                     }
 
-                    if ($remote_handler) {
-                        stream_set_timeout($remote_handler, $this->timeout);
+                    if ($remoteHandler) {
+                        stream_set_timeout($remoteHandler, $this->timeout);
 
                         if (isset($remote_url['query'])) {
                             $remote_url['path'] .= '?' . $remote_url['query'];
@@ -1341,13 +1341,13 @@ class Browscap
 
                         $out = sprintf(self::REQUEST_HEADERS, $remote_url['path'], $remote_url['host'], $this->_getUserAgent());
 
-                        fwrite($remote_handler, $out);
+                        fwrite($remoteHandler, $out);
 
-                        $response = fgets($remote_handler);
+                        $response = fgets($remoteHandler);
                         if (false !== strpos($response, '200 OK')) {
                             $file = '';
-                            while (!feof($remote_handler)) {
-                                $file .= fgets($remote_handler);
+                            while (!feof($remoteHandler)) {
+                                $file .= fgets($remoteHandler);
                             }
 
                             $file = str_replace("\r\n", "\n", $file);
@@ -1356,7 +1356,7 @@ class Browscap
 
                             $file = implode("\n\n", $file);
 
-                            fclose($remote_handler);
+                            fclose($remoteHandler);
 
                             return $file;
                         }

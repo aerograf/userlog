@@ -20,6 +20,7 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
+use Xmf\Request;
 use XoopsModules\Userlog;
 
 defined('XOOPS_ROOT_PATH') || die('Restricted access');
@@ -59,9 +60,9 @@ if (!empty($setting) && strpos($setting, 'active')) {
     }
 
     // if there is referer option inside/outside
-    if ((empty($tolog['outside']) || empty($tolog['inside'])) && !empty($_SERVER['HTTP_REFERER'])) {
+    if ((empty($tolog['outside']) || empty($tolog['inside'])) && !empty(Request::getString('HTTP_REFERER', '', 'SERVER'))) {
         // if referer is outside
-        if (false === strpos($_SERVER['HTTP_REFERER'], XOOPS_URL)) {
+        if (false === strpos(Request::getString('HTTP_REFERER', '', 'SERVER'), XOOPS_URL)) {
             if (empty($tolog['outside'])) {
                 return true;
             }
