@@ -32,7 +32,7 @@ class UserlogCorePreload extends \XoopsPreloadItem
      */
     public static function eventCoreFooterStart($args)
     {
-        include __DIR__ . '/../include/log.php';
+        include  dirname(__DIR__) . '/include/log.php';
     }
 
     // to log redirects because usually prorammers use exit() after redirect_header function.
@@ -42,7 +42,7 @@ class UserlogCorePreload extends \XoopsPreloadItem
      */
     public static function eventCoreIncludeFunctionsRedirectheader($args)
     {
-        include __DIR__ . '/../include/log.php';
+        include  dirname(__DIR__) . '/include/log.php';
     }
 
     /**
@@ -53,7 +53,7 @@ class UserlogCorePreload extends \XoopsPreloadItem
         // to add PSR-4 autoloader
         include __DIR__ . '/autoloader.php';
 
-        include __DIR__ . '/../include/postlog.php';
+        include  dirname(__DIR__) . '/include/postlog.php';
     }
     // in XOOPS255/index.php (homepage) when no module is set for start page there is a bug in XOOPS255/header.php exit() should be commented
     /*$xoopsPreload->triggerEvent('core.header.checkcache');
@@ -68,6 +68,6 @@ class UserlogCorePreload extends \XoopsPreloadItem
      */
     public static function eventSystemClassGuiHeader($args)
     {
-        include __DIR__ . '/../include/log.php';
+        include  dirname(__DIR__) . '/include/log.php';
     }
 }

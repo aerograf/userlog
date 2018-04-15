@@ -22,7 +22,7 @@
 use XoopsModules\Userlog;
 
 defined('XOOPS_ROOT_PATH') || die('Restricted access');
-require_once __DIR__ . '/../include/common.php';
+require_once  dirname(__DIR__) . '/include/common.php';
 
 if (defined('USERLOG_BLOCK_STATS_TYPE_DEFINED')) {
     return;

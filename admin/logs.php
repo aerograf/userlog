@@ -131,8 +131,8 @@ if ('del' === $opentry && !empty($confirm)) {
 // get logs from engine: 1- db 2- file
 $loglogObj = Userlog\Log::getInstance();
 if ('db' === $engine) {
-    $logs      = $helper->getHandler('log')->getLogs($limitentry, $startentry, $criteria, $sortentry, $orderentry, null, false);
-    $totalLogs = $helper->getHandler('log')->getLogsCount($criteria);
+    $logs      = $helper->getHandler('Log')->getLogs($limitentry, $startentry, $criteria, $sortentry, $orderentry, null, false);
+    $totalLogs = $helper->getHandler('Log')->getLogsCount($criteria);
 } else {
     list($logs, $totalLogs) = $loglogObj->getLogsFromFiles($file, $limitentry, $startentry, $options, $sortentry, $orderentry);
 }

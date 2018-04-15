@@ -64,7 +64,7 @@ foreach ($stats as $type => $arr) {
 }
 $criteria = new \CriteriaCompo();
 $criteria->setGroupBy('module');
-$moduleViews = $helper->getHandler('log')->getCounts($criteria);
+$moduleViews = $helper->getHandler('Log')->getCounts($criteria);
 $dirNames    = $helper->getModules();
 if (!empty($moduleViews)) {
     $adminObject->addInfoBox(_AM_USERLOG_VIEW_MODULE);
@@ -77,18 +77,18 @@ if (!empty($moduleViews)) {
 $criteria = new \CriteriaCompo();
 $criteria->setGroupBy('uid');
 $criteria->setLimit(10);
-$userViews = $helper->getHandler('log')->getCounts($criteria);
+$userViews = $helper->getHandler('Log')->getCounts($criteria);
 if (!empty($userViews)) {
     $adminObject->addInfoBox(_AM_USERLOG_VIEW_USER);
     foreach ($userViews as $uid => $views) {
-        $adminObject->addInfoBoxLine(sprintf(($uid ? '<a href="' . XOOPS_URL . '/userinfo.php?uid=' . $uid . '">' . XoopsUserUtility::getUnameFromId($uid) . '</a>' : XoopsUserUtility::getUnameFromId(0)) . ': %s', $views), '', $views ? 'GREEN' : 'RED');
+        $adminObject->addInfoBoxLine(sprintf(($uid ? '<a href="' . XOOPS_URL . '/userinfo.php?uid=' . $uid . '">' . \XoopsUserUtility::getUnameFromId($uid) . '</a>' : \XoopsUserUtility::getUnameFromId(0)) . ': %s', $views), '', $views ? 'GREEN' : 'RED');
     }
 }
 $criteria = new \CriteriaCompo();
 $criteria->add(new \Criteria('groups', '%g%', 'LIKE')); // Why cannot use this?: $criteria->add(new \Criteria("groups", "", "!="))
 $criteria->setGroupBy('groups');
 $criteria->setLimit(10);
-$groupViews = $helper->getHandler('log')->getCounts($criteria);
+$groupViews = $helper->getHandler('Log')->getCounts($criteria);
 if (!empty($groupViews)) {
     $adminObject->addInfoBox(_AM_USERLOG_VIEW_GROUP);
     foreach ($groupViews as $gids => $views) {
