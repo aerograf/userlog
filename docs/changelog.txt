@@ -1,3 +1,9 @@
+<h5>1.20 Beta 1   [NOT RELEASED]</h5>  Dev: Xoops 2.5.9, PHP 7.2.1
+<hr>
+- Namespaces, Autoload (mamba)
+WORK IN PROGRESS
+
+
 <h5>1.17 Beta 1   [2017-09-04]</h5>
 <hr>
 - conversion of Userlog helper class to XMF (mamba)
@@ -20,7 +26,7 @@
 - Hardening to type safe (mamba)
 - update Help (mamba)
 - changed _handler to Handler (mamba)
-- removed '/' from void HTML elements (&lt;br&gt;, &lt;img&gt;, etc) (mamba)
+- removed '/' from void HTML elements (&lt;br>, &lt;img>, etc) (mamba)
 - HTML 5: removed 'selected' and 'checked' (mamba)
 - updated file headers for consistency (mamba)
 - renamed several $indexAdmin with $adminObject for consistency (mamba)

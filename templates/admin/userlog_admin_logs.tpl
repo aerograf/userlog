@@ -48,8 +48,10 @@
     <{assign var=widthC value=5}>
     <div class="outer">
         <{if $pages gt 1}>
-            <form name="bulk" action="logs.php?op=<{if $query_page}>&amp;<{$query_page}><{/if}><{if $query_entry}><{$query_entry}><{/if}>" method="POST"
-                  onsubmit="if(window.document.bulk.op.value =='') {return false;} else if (window.document.bulk.op.value =='del') {return deleteSubmitValid();} else {window.document.bulk.limitentry.value = 0};">
+            <form name="bulk" action="logs.php?op=<{if $query_page}>&amp;<{$query_page}><{/if}>
+                <{if $query_entry}><{$query_entry}><{/if}>" method="POST" onsubmit="if(window.document.bulk.op.value =='') {return false;}
+                  else if (window.document.bulk.op.value =='del') {return deleteSubmitValid();}
+                  else {window.document.bulk.limitentry.value = 0};">
                 <{securityToken}><{*//mb*}>
                 <input type="hidden" name="confirm" value="1">
                 <input type="hidden" name="log_id" value="bulk">

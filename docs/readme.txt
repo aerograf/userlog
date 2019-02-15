@@ -143,11 +143,11 @@ https://sourceforge.net/p/xoops/bugs/1269/ block template file will not updated 
 
 5- If you test userlog in local and you be disconnected or your internet connection was low you may have this error:
 [code]
-Fatal error: Call to undefined function phpbrowscap\curl_init() in xoops256\modules\userlog\class\phpbrowscap\Browscap.php on line 793
+Fatal error: Call to undefined function phpbrowscap\curl_init() in xoops256\modules\Userlog\class\phpbrowscap\Browscap.php on line 793
 [/code]
 or this:
 [code]
-Fatal error: Maximum execution time of 30 seconds exceeded in xoops256\modules\userlog\class\phpbrowscap\Browscap.php on line 749
+Fatal error: Maximum execution time of 30 seconds exceeded in xoops256\modules\Userlog\class\phpbrowscap\Browscap.php on line 749
 [/code]
 userlog need php_browscap.ini to get the browser data from user agent.
 You should go to:

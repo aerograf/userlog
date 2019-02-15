@@ -1,4 +1,5 @@
-<?php
+<?php namespace XoopsModules\Userlog;
+
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -21,6 +22,7 @@
  */
 
 use Xmf\Request;
+use XoopsModules\Userlog;
 
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 require_once __DIR__ . '/phpbrowscap/Browscap.php';
@@ -31,7 +33,7 @@ use phpbrowscap\Browscap;
 /**
  * Class Userlog
  */
-class Userlog extends \Xmf\Module\Helper
+class Helper extends \Xmf\Module\Helper
 {
     public $logmodule;
     public $user;
@@ -46,15 +48,16 @@ class Userlog extends \Xmf\Module\Helper
      */
     protected function __construct($debug)
     {
+        $moduleDirName      = basename(dirname(__DIR__));
         $this->debug        = $debug;
-        $this->dirname      = USERLOG_DIRNAME;
-        $this->cookiePrefix = USERLOG_DIRNAME . '_' . ($this->getUser() ? $this->getUser()->getVar('uid') : '');
+        $this->dirname      = $moduleDirName;
+        $this->cookiePrefix = $moduleDirName . '_' . ($this->getUser() ? $this->getUser()->getVar('uid') : '');
     }
 
     /**
      * @param bool $debug
      *
-     * @return Userlog
+     * @return \Xmf\Module\Helper
      */
     public static function getInstance($debug = false)
     {
@@ -90,16 +93,16 @@ class Userlog extends \Xmf\Module\Helper
         // get all dirnames
         /** @var XoopsModuleHandler $moduleHandler */
         $moduleHandler = xoops_getHandler('module');
-        $criteria      = new CriteriaCompo();
+        $criteria      = new \CriteriaCompo();
         if (count($dirnames) > 0) {
             foreach ($dirnames as $mDir) {
-                $criteria->add(new Criteria('dirname', $mDir), 'OR');
+                $criteria->add(new \Criteria('dirname', $mDir), 'OR');
             }
         }
         if (!empty($otherCriteria)) {
             $criteria->add($otherCriteria);
         }
-        $criteria->add(new Criteria('isactive', 1), 'AND');
+        $criteria->add(new \Criteria('isactive', 1), 'AND');
         $modules = $moduleHandler->getObjects($criteria, true);
         if ($asObj) {
             return $modules;
@@ -148,7 +151,6 @@ class Userlog extends \Xmf\Module\Helper
         return $this->browscap;
     }
 
-
     /**
      * @param null $name
      * @param null $value
@@ -176,7 +178,7 @@ class Userlog extends \Xmf\Module\Helper
         $allFiles    = [];
         $totalFiles  = 0;
         foreach ($logPaths as $path) {
-            $folderHandler                           = XoopsFile::getHandler('folder', $path . '/' . USERLOG_DIRNAME);
+            $folderHandler                           = \XoopsFile::getHandler('folder', $path . '/' . USERLOG_DIRNAME);
             $allFiles[$path . '/' . USERLOG_DIRNAME] = $folderHandler->find('.*' . $this->logext);
             $totalFiles                              += count($allFiles[$path . '/' . USERLOG_DIRNAME]);
         }
@@ -236,8 +238,8 @@ class Userlog extends \Xmf\Module\Helper
     }
 
     /**
-     * @param null   $intTime
-     * @param string $dateFormat
+     * @param null        $intTime
+     * @param string      $dateFormat
      * @param null|string $timeoffset
      *
      * @return bool|string
@@ -252,7 +254,7 @@ class Userlog extends \Xmf\Module\Helper
         }
         xoops_load('XoopsLocal');
 
-        return class_exists('XoopsLocal') ? XoopsLocal::formatTimestamp($intTime, $dateFormat, $timeoffset) : XoopsLocale::formatTimestamp($intTime, $dateFormat, $timeoffset); // use XoopsLocale in xoops26
+        return class_exists('XoopsLocal') ? \XoopsLocal::formatTimestamp($intTime, $dateFormat, $timeoffset) : \XoopsLocale::formatTimestamp($intTime, $dateFormat, $timeoffset); // use XoopsLocale in xoops26
     }
 
     /**
@@ -318,7 +320,6 @@ class Userlog extends \Xmf\Module\Helper
         return $postPatch;
     }
 
-
     private function initLogModule()
     {
         global $xoopsModule;
@@ -353,13 +354,12 @@ class Userlog extends \Xmf\Module\Helper
 
     /**
      * @return bool
-     * @throws \phpbrowscap\Exception
      */
     private function initBrowsCap()
     {
         $browscapCache = XOOPS_CACHE_PATH . '/browscap';
         // force to create file if not exist
-        $folderHandler = XoopsFile::getHandler('folder', $browscapCache, true);
+        $folderHandler = \XoopsFile::getHandler('folder', $browscapCache, true);
         if (!$folderHandler->pwd()) {
             // Errors Warning: mkdir() [function.mkdir]: Permission denied in file /class/file/folder.php line 529
             $this->addLog("Cannot create folder ({$browscapCache})");
@@ -372,5 +372,21 @@ class Userlog extends \Xmf\Module\Helper
         $this->addLog('INIT BrowsCap');
 
         return true;
+    }
+
+    /**
+     * Get an Object Handler
+     *
+     * @param string $name name of handler to load
+     *
+     * @return bool|\XoopsObjectHandler|\XoopsPersistableObjectHandler
+     */
+    public function getHandler($name)
+    {
+        $ret   = false;
+        $db    = \XoopsDatabaseFactory::getDatabaseConnection();
+        $class = '\\XoopsModules\\' . ucfirst(strtolower(basename(dirname(__DIR__)))) . '\\' . $name . 'Handler';
+        $ret   = new $class($db);
+        return $ret;
     }
 }

@@ -21,28 +21,29 @@
  */
 
 use Xmf\Request;
+use XoopsModules\Userlog;
 
 require_once __DIR__ . '/admin_header.php';
 require_once XOOPS_ROOT_PATH . '/class/pagenav.php';
 xoops_cp_header();
-$userlog = Userlog::getInstance();
+$helper = Userlog\Helper::getInstance();
 // Where do we start ?
 $startentry = Request::getInt('startentry', 0);
-$limitentry = Request::getInt('limitentry', $userlog->getConfig('logs_perpage'));
+$limitentry = Request::getInt('limitentry', $helper->getConfig('logs_perpage'));
 $sortentry  = Request::getString('sortentry', 'log_id');
 $orderentry = Request::getString('orderentry', 'DESC');
 
 $options   = Request::getArray('options');
-$engine    = Request::getString('engine', $userlog->getConfig('engine'));
-$file      = Request::getArray('file', $userlog->getConfig('file'));
+$engine    = Request::getString('engine', $helper->getConfig('engine'));
+$file      = Request::getArray('file', $helper->getConfig('file'));
 $opentry   = Request::getString('op', '', 'post');
 $log_id    = Request::getArray('log_id', 0, 'post');
-$logsetObj = UserlogSetting::getInstance();
+$logsetObj = Userlog\Setting::getInstance();
 // START build Criteria for database
 // get var types int, text, bool , ...
 $type_vars = $logsetObj->getOptions('', 'type');
 //$query_types = array("="=>"",">"=>"GT", "<"=>"LT");
-$criteria = new CriteriaCompo();
+$criteria = new \CriteriaCompo();
 foreach ($options as $key => $val) {
     // deal with greater than and lower than
     $tt = substr($key, -2);
@@ -60,7 +61,7 @@ foreach ($options as $key => $val) {
             $t  = '=';
             break;
     }
-    $criteria_q[$key]  = new CriteriaCompo();
+    $criteria_q[$key]  = new \CriteriaCompo();
     $val_arr           = explode(',', $val);
     $query_array[$key] = "options[{$key}]={$val}"; // to keep options in url. very important
     // if type is text
@@ -68,9 +69,9 @@ foreach ($options as $key => $val) {
         foreach ($val_arr as $qry) {
             // if !QUERY eg: !logs.php,views.php
             if (0 === strpos($qry, '!')) {
-                $criteria_q[$key]->add(new Criteria($op, '%' . substr($qry, 1) . '%', 'NOT LIKE'), 'AND');
+                $criteria_q[$key]->add(new \Criteria($op, '%' . substr($qry, 1) . '%', 'NOT LIKE'), 'AND');
             } else {
-                $criteria_q[$key]->add(new Criteria($op, '%' . $qry . '%', 'LIKE'), 'OR');
+                $criteria_q[$key]->add(new \Criteria($op, '%' . $qry . '%', 'LIKE'), 'OR');
             }
         }
     } else {
@@ -78,13 +79,13 @@ foreach ($options as $key => $val) {
         if (1 == count($val_arr)) {
             $val_int = $val_arr[0];
             if ('log_time' === $op || 'last_login' === $op) {
-                $val_int = time() - $userlog->getSinceTime($val_int);
+                $val_int = time() - $helper->getSinceTime($val_int);
             }
             // query is one int $t (=, < , >)
-            $criteria_q[$key]->add(new Criteria($op, $val_int, $t));
+            $criteria_q[$key]->add(new \Criteria($op, $val_int, $t));
         } else {
             // query is an array of int separate with comma. use OR ???
-            $criteria_q[$key]->add(new Criteria($op, '(' . $val . ')', 'IN'));
+            $criteria_q[$key]->add(new \Criteria($op, '(' . $val . ')', 'IN'));
         }
     }
     // add criteria
@@ -109,10 +110,10 @@ $confirm = Request::getString('confirm', 0, 'post');
 if ('del' === $opentry && !empty($confirm)) {
     if ('db' === $engine) {
         // delete logs in database
-        $statsObj = UserlogStats::getInstance();
+        $statsObj = Userlog\Stats::getInstance();
         if (is_numeric($log_id[0])) {
-            $criteriaLogId = new CriteriaCompo();
-            $criteriaLogId->add(new Criteria('log_id', '(' . implode(',', $log_id) . ')', 'IN'));
+            $criteriaLogId = new \CriteriaCompo();
+            $criteriaLogId->add(new \Criteria('log_id', '(' . implode(',', $log_id) . ')', 'IN'));
             $numDel = $statsObj->delete('log', 0, 0, $criteriaLogId);
             redirect_header('logs.php?op=' . $query_entry . (!empty($query_page) ? '&amp;' . $query_page : ''), 1, sprintf(_AM_USERLOG_LOG_DELETE_SUCCESS, $numDel));
         } elseif ('bulk' === $log_id[0]) {
@@ -128,16 +129,16 @@ if ('del' === $opentry && !empty($confirm)) {
 // END delete/purge
 
 // get logs from engine: 1- db 2- file
-$loglogObj = UserlogLog::getInstance();
+$loglogObj = Userlog\Log::getInstance();
 if ('db' === $engine) {
-    $logs      = $userlog->getHandler('log')->getLogs($limitentry, $startentry, $criteria, $sortentry, $orderentry, null, false);
-    $totalLogs = $userlog->getHandler('log')->getLogsCount($criteria);
+    $logs      = $helper->getHandler('log')->getLogs($limitentry, $startentry, $criteria, $sortentry, $orderentry, null, false);
+    $totalLogs = $helper->getHandler('log')->getLogsCount($criteria);
 } else {
     list($logs, $totalLogs) = $loglogObj->getLogsFromFiles($file, $limitentry, $startentry, $options, $sortentry, $orderentry);
 }
 
 // pagenav to template
-$pagenav = new XoopsPageNav($totalLogs, $limitentry, $startentry, 'startentry', $query_entry . (!empty($query_page) ? '&amp;' . $query_page : ''));
+$pagenav = new \XoopsPageNav($totalLogs, $limitentry, $startentry, 'startentry', $query_entry . (!empty($query_page) ? '&amp;' . $query_page : ''));
 $GLOBALS['xoopsTpl']->assign('pagenav', !empty($pagenav) ? $pagenav->renderNav() : '');
 
 // options/entries to template
@@ -176,15 +177,15 @@ if (0 === strpos($opentry, 'export')) {
     list($opentry, $export) = explode('-', $opentry);
     // if it is not bulk export get the actual logs in the page
     if (is_numeric($log_id[0])) {
-        $logs = $userlog->getFromKeys($logs, $log_id);
+        $logs = $helper->getFromKeys($logs, $log_id);
     }
     $totalLogsExport = count($logs);
     switch ($export) {
         case 'csv':
             if ($csvFile = $loglogObj->exportLogsToCsv($logs, $headers, 'engine_' . $engine . '_total_' . $totalLogsExport, ';')) {
-                redirect_header('logs.php?op=' . $query_entry . (!empty($query_page) ? '&amp;' . $query_page : '') . '&amp;limitentry=' . (empty($limitentry) ? $userlog->getConfig('logs_perpage') : $limitentry), 7, sprintf(_AM_USERLOG_LOG_EXPORT_SUCCESS, $totalLogsExport, $csvFile));
+                redirect_header('logs.php?op=' . $query_entry . (!empty($query_page) ? '&amp;' . $query_page : '') . '&amp;limitentry=' . (empty($limitentry) ? $helper->getConfig('logs_perpage') : $limitentry), 7, sprintf(_AM_USERLOG_LOG_EXPORT_SUCCESS, $totalLogsExport, $csvFile));
             }
-            redirect_header('logs.php?op=' . $query_entry . (!empty($query_page) ? '&amp;' . $query_page : '') . '&amp;limitentry=' . (empty($limitentry) ? $userlog->getConfig('logs_perpage') : $limitentry), 1, _AM_USERLOG_LOG_EXPORT_ERROR);
+            redirect_header('logs.php?op=' . $query_entry . (!empty($query_page) ? '&amp;' . $query_page : '') . '&amp;limitentry=' . (empty($limitentry) ? $helper->getConfig('logs_perpage') : $limitentry), 1, _AM_USERLOG_LOG_EXPORT_ERROR);
             break;
         default:
             break;
@@ -193,7 +194,7 @@ if (0 === strpos($opentry, 'export')) {
 // END export
 
 // engine element
-$engineEl = new XoopsFormSelect(_AM_USERLOG_ENGINE, 'engine', $engine);
+$engineEl = new \XoopsFormSelect(_AM_USERLOG_ENGINE, 'engine', $engine);
 $engineEl->addOption('db', _AM_USERLOG_ENGINE_DB);
 $engineEl->addOption('file', _AM_USERLOG_ENGINE_FILE);
 $engineEl->setDescription(_AM_USERLOG_ENGINE_DSC);
@@ -203,17 +204,17 @@ if ('file' === $engine) {
     $fileEl->setDescription(_AM_USERLOG_FILE_DSC);
 }
 // limit, sort, order
-$limitEl = new XoopsFormText(_AM_USERLOG_LOGS_PERPAGE, 'limitentry', 10, 255, $limitentry);
-$limitEl->setDescription(sprintf(_AM_USERLOG_LOGS_PERPAGE_DSC, $userlog->getConfig('logs_perpage')));
-$sortEl = new XoopsFormSelect(_AM_USERLOG_SORT, 'sortentry', $sortentry);
+$limitEl = new \XoopsFormText(_AM_USERLOG_LOGS_PERPAGE, 'limitentry', 10, 255, $limitentry);
+$limitEl->setDescription(sprintf(_AM_USERLOG_LOGS_PERPAGE_DSC, $helper->getConfig('logs_perpage')));
+$sortEl = new \XoopsFormSelect(_AM_USERLOG_SORT, 'sortentry', $sortentry);
 $sortEl->addOptionArray($headers);
 $sortEl->setDescription(_AM_USERLOG_SORT_DSC);
-$orderEl = new XoopsFormSelect(_AM_USERLOG_ORDER, 'orderentry', $orderentry);
+$orderEl = new \XoopsFormSelect(_AM_USERLOG_ORDER, 'orderentry', $orderentry);
 $orderEl->addOption('DESC', _DESCENDING);
 $orderEl->addOption('ASC', _ASCENDING);
 $orderEl->setDescription(_AM_USERLOG_ORDER_DSC);
 // submit logs
-$submitEl = new XoopsFormButton(_SUBMIT, 'submitlogs', _SUBMIT, 'submit');
+$submitEl = new \XoopsFormButton(_SUBMIT, 'submitlogs', _SUBMIT, 'submit');
 // add elements
 $form->addElement($engineEl);
 if ('file' === $engine) {
@@ -249,7 +250,7 @@ $formNav->addElement($sortEl);
 $orderEl->setExtra('onchange="document.forms.logsnav.submitlogsnav.click()"');
 $orderEl->setClass('floatleft left');
 $formNav->addElement($orderEl);
-$submitEl = new XoopsFormButton('', 'submitlogsnav', _GO, 'submit');
+$submitEl = new \XoopsFormButton('', 'submitlogsnav', _GO, 'submit');
 $submitEl->setClass('floatleft left');
 $formNav->addElement($submitEl);
 $formNav->setExtra("onsubmit=\"preventSubmitEmptyInput('options[');\"");
@@ -276,7 +277,7 @@ $formHead->addElement($sortEl);
 $orderEl->_class = ['hidden'];
 $formHead->addElement($orderEl);
 // add submit to formHead
-$submitEl = new XoopsFormButton('', 'submitlogshead', _SUBMIT, 'submit');
+$submitEl = new \XoopsFormButton('', 'submitlogshead', _SUBMIT, 'submit');
 $submitEl->setClass('floatleft left');
 $formHead->addElement($submitEl);
 $formHead->setExtra("onsubmit=\"preventSubmitEmptyInput('options[');\"");
@@ -292,7 +293,7 @@ foreach ($skips as $option) {
 }
 $GLOBALS['xoopsTpl']->assign('headers', $headers);
 // get TOGGLE cookie
-$toggles = $userlog->getCookie('TOGGLE');
+$toggles = $helper->getCookie('TOGGLE');
 $expand  = (count($toggles) > 0) ? (in_array('formhead', $toggles) ? false : true) : true;
 if ($expand) {
     $formHeadToggle['toggle'] = 'toggle_block';

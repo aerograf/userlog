@@ -1,4 +1,5 @@
-<?php
+<?php namespace XoopsModules\Userlog\Plugin;
+
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -14,14 +15,14 @@
  * @license         http://www.fsf.org/copyleft/gpl.html GNU public license
  * @author          trabis <lusopoemas@gmail.com>
  */
-class Userlog_Module_Plugin_Abstract
+class PluginAbstract
 {
     /**
      * @param string $dirname
      */
     public function __construct($dirname)
     {
-        //$xoops = Xoops::getInstance();
+        //$xoops = \Xoops::getInstance();
         xoops_loadLanguage('modinfo', $dirname);
         //$xoops->loadLanguage('modinfo', $dirname);
     }

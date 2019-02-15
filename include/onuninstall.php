@@ -8,6 +8,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -18,6 +19,9 @@
  * @author          irmtfan (irmtfan@yahoo.com)
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
+
+use XoopsModules\Userlog;
+
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 require_once __DIR__ . '/common.php';
 /**
@@ -25,9 +29,9 @@ require_once __DIR__ . '/common.php';
  *
  * @return int
  */
-function xoops_module_uninstall_userlog(XoopsModule $module)
+function xoops_module_uninstall_userlog(\XoopsModule $module)
 {
-    $logsetObj = UserlogSetting::getInstance();
+    $logsetObj = Userlog\Setting::getInstance();
 
     return $logsetObj->cleanCache(); // delete all settings caches
 }

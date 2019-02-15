@@ -1,4 +1,5 @@
-<?php
+<?php namespace XoopsModules\Userlog;
+
 /*
  You may not change or alter any portion of this comment or credits
  of supporting developers from this source code or any supporting source code
@@ -21,19 +22,20 @@
  */
 
 use Xmf\Request;
+use XoopsModules\Userlog;
 
 defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 require_once __DIR__ . '/../include/common.php';
 
 /**
- * Class UserlogLog
+ * Class Log
  */
-class UserlogLog extends XoopsObject
+class Log extends \XoopsObject
 {
     /**
      * @var string
      */
-    public $userlog = null;
+    public $helper = null;
 
     public $store = 0; // store: 0,1->db 2->file 3->both
 
@@ -54,7 +56,7 @@ class UserlogLog extends XoopsObject
      */
     public function __construct()
     {
-        $this->userlog = Userlog::getInstance();
+        $this->helper = Userlog\Helper::getInstance();
         $this->initVar('log_id', XOBJ_DTYPE_INT, null, false);
         $this->initVar('log_time', XOBJ_DTYPE_INT, null, true);
         $this->initVar('uid', XOBJ_DTYPE_INT, null, false);
@@ -99,7 +101,7 @@ class UserlogLog extends XoopsObject
     }
 
     /**
-     * @return UserlogLog
+     * @return Userlog\Log
      */
     public static function getInstance()
     {
@@ -116,7 +118,7 @@ class UserlogLog extends XoopsObject
      */
     public function getLogTime()
     {
-        return $this->userlog->formatTime($this->getVar('log_time'));
+        return $this->helper->formatTime($this->getVar('log_time'));
     }
 
     /**
@@ -124,7 +126,7 @@ class UserlogLog extends XoopsObject
      */
     public function last_login()
     {
-        return $this->userlog->formatTime($this->getVar('last_login'));
+        return $this->helper->formatTime($this->getVar('last_login'));
     }
 
     /**
@@ -157,25 +159,25 @@ class UserlogLog extends XoopsObject
         $modules = [],
         $since = 0,
         $users = [],
-        $groups = []
-    ) {
+        $groups = [])
+    {
         if (!empty($modules)) {
-            $criteriaModule = new CriteriaCompo();
+            $criteriaModule = new \CriteriaCompo();
             foreach ($modules as $module_dir => $items) {
-                $criteriaItem = new CriteriaCompo();
-                $criteriaItem->add(new Criteria('module', $module_dir));
-                $criteriaItemName = new CriteriaCompo();
+                $criteriaItem = new \CriteriaCompo();
+                $criteriaItem->add(new \Criteria('module', $module_dir));
+                $criteriaItemName = new \CriteriaCompo();
                 if (!empty($items['item_name'])) {
                     foreach ($items['item_name'] as $item_name) {
-                        // why we cannot use this $criteriaItemName->add(new Criteria('item_name', $items, "IN"));
-                        $criteriaItemName->add(new Criteria('item_name', $item_name), 'OR');
+                        // why we cannot use this $criteriaItemName->add(new \Criteria('item_name', $items, "IN"));
+                        $criteriaItemName->add(new \Criteria('item_name', $item_name), 'OR');
                     }
                 }
                 $criteriaItem->add($criteriaItemName);
-                $criteriaScript = new CriteriaCompo();
+                $criteriaScript = new \CriteriaCompo();
                 if (!empty($items['script'])) {
                     foreach ($items['script'] as $script_name) {
-                        $criteriaScript->add(new Criteria('script', $script_name), 'OR');
+                        $criteriaScript->add(new \Criteria('script', $script_name), 'OR');
                     }
                 }
                 $criteriaItem->add($criteriaScript);
@@ -185,24 +187,24 @@ class UserlogLog extends XoopsObject
         }
 
         if (!empty($since)) {
-            $starttime     = time() - $this->userlog->getSinceTime($since);
-            $criteriaSince = new CriteriaCompo();
-            $criteriaSince->add(new Criteria('log_time', $starttime, '>'));
+            $starttime     = time() - $this->helper->getSinceTime($since);
+            $criteriaSince = new \CriteriaCompo();
+            $criteriaSince->add(new \Criteria('log_time', $starttime, '>'));
         }
 
         if (!empty($users)) {
-            $criteriaUser = new CriteriaCompo();
-            $criteriaUser->add(new Criteria('uid', '(' . implode(',', $users) . ')', 'IN'));
+            $criteriaUser = new \CriteriaCompo();
+            $criteriaUser->add(new \Criteria('uid', '(' . implode(',', $users) . ')', 'IN'));
         }
         if (!empty($groups)) {
-            $criteriaGroup = new CriteriaCompo();
+            $criteriaGroup = new \CriteriaCompo();
             foreach ($groups as $group) {
-                $criteriaGroup->add(new Criteria('groups', '%g' . $group . '%', 'LIKE'), 'OR');
+                $criteriaGroup->add(new \Criteria('groups', '%g' . $group . '%', 'LIKE'), 'OR');
             }
         }
 
         // add all criterias
-        $criteria = new CriteriaCompo();
+        $criteria = new \CriteriaCompo();
         if (!empty($criteriaModule)) {
             $criteria->add($criteriaModule);
         }
@@ -233,10 +235,10 @@ class UserlogLog extends XoopsObject
         ];
         $criteria->setGroupBy('pageadmin, module, script, item_name, item_id');
 
-        list($loglogsObj, $itemViews) = $this->userlog->getHandler('log')->getLogsCounts($criteria, $fields);
+        list($loglogsObj, $itemViews) = $this->helper->getHandler('log')->getLogsCounts($criteria, $fields);
         $criteria->setGroupBy('module');
         $criteria->setSort(('module_count' === $sort) ? 'count' : 'module');
-        $moduleViews = $this->userlog->getHandler('log')->getCounts($criteria);
+        $moduleViews = $this->helper->getHandler('log')->getCounts($criteria);
         unset($criteria);
         // initializing
         $items = []; // very important!!!
@@ -307,14 +309,14 @@ class UserlogLog extends XoopsObject
                     // update referral in stats table
                     case 'referer':
                         if (false === strpos($logvalue, XOOPS_URL)) {
-                            $statsObj = UserlogStats::getInstance();
+                            $statsObj = Userlog\Stats::getInstance();
                             $statsObj->update('referral', 0, 1, true, parse_url($logvalue, PHP_URL_HOST)); // auto increment 1
                         }
                         break;
                     // update browser and OS in stats table
                     case 'user_agent':
-                        $statsObj   = UserlogStats::getInstance();
-                        $browserArr = $this->userlog->getBrowsCap()->getBrowser($logvalue, true);
+                        $statsObj   = Userlog\Stats::getInstance();
+                        $browserArr = $this->helper->getBrowsCap()->getBrowser($logvalue, true);
                         $statsObj->update('browser', 0, 1, true, !empty($browserArr['Parent']) ? (!empty($browserArr['Crawler']) ? 'crawler: ' : '') . $browserArr['Parent'] : 'unknown'); // auto increment 1
                         $statsObj->update('OS', 0, 1, true, $browserArr['Platform']); // auto increment 1
                         break;
@@ -322,7 +324,7 @@ class UserlogLog extends XoopsObject
                 $this->setVar($option, $logvalue);
             }
         }
-        $ret = $this->userlog->getHandler('log')->insert($this, $force);
+        $ret = $this->helper->getHandler('log')->insert($this, $force);
         $this->unsetNew();
 
         return $ret;
@@ -337,12 +339,12 @@ class UserlogLog extends XoopsObject
     public function arrayToDisplay($logs, $skips = [])
     {
         foreach ($logs as $log_id => $log) {
-            $logs[$log_id]['log_time']   = $this->userlog->formatTime($logs[$log_id]['log_time']);
-            $logs[$log_id]['last_login'] = $this->userlog->formatTime($logs[$log_id]['last_login']);
+            $logs[$log_id]['log_time']   = $this->helper->formatTime($logs[$log_id]['log_time']);
+            $logs[$log_id]['last_login'] = $this->helper->formatTime($logs[$log_id]['last_login']);
             if (!empty($logs[$log_id]['groups'])) {
                 // change g1g2 to Webmasters, Registered Users
                 $groups                  = explode('g', substr($logs[$log_id]['groups'], 1)); // remove the first "g" from string
-                $userGroupNames          = $this->userlog->getFromKeys($this->userlog->getGroupList(), $groups);
+                $userGroupNames          = $this->helper->getFromKeys($this->helper->getGroupList(), $groups);
                 $logs[$log_id]['groups'] = implode(',', $userGroupNames);
             }
             foreach ($this->sourceJSON as $option) {
@@ -380,13 +382,13 @@ class UserlogLog extends XoopsObject
      */
     public function storeFile($tolog)
     {
-        $log_file = $this->userlog->getWorkingFile();
+        $log_file = $this->helper->getWorkingFile();
         // file create/open/write
-        $fileHandler = XoopsFile::getHandler();
+        $fileHandler = \XoopsFile::getHandler();
         $fileHandler->__construct($log_file, false);
-        if ($fileHandler->size() > $this->userlog->getConfig('maxlogfilesize')) {
-            $log_file_name = $this->userlog->getConfig('logfilepath') . '/' . USERLOG_DIRNAME . '/' . $this->userlog->getConfig('logfilename');
-            $old_file      = $log_file_name . '_' . date('Y-m-d_H-i-s') . '.' . $this->userlog->logext;
+        if ($fileHandler->size() > $this->helper->getConfig('maxlogfilesize')) {
+            $log_file_name = $this->helper->getConfig('logfilepath') . '/' . USERLOG_DIRNAME . '/' . $this->helper->getConfig('logfilename');
+            $old_file      = $log_file_name . '_' . date('Y-m-d_H-i-s') . '.' . $this->helper->logext;
             if (!$result = rename($log_file, $old_file)) {
                 $this->setErrors("ERROR renaming ({$log_file})");
 
@@ -403,7 +405,7 @@ class UserlogLog extends XoopsObject
             }
             $this->setErrors("File was not exist create file ({$log_file})");
             // update the new file in database
-            $statsObj = UserlogStats::getInstance();
+            $statsObj = Userlog\Stats::getInstance();
             $statsObj->update('file', 0, 0, false, $log_file); // value = 0 to not auto increment
             // update old file if exist
             if (!empty($old_file)) {
@@ -466,10 +468,10 @@ class UserlogLog extends XoopsObject
      */
     public function exportLogsToCsv($logs, $headers, $csvNamePrefix = 'list_', $delimiter = ';')
     {
-        $csvFile = $this->userlog->getConfig('logfilepath') . '/' . USERLOG_DIRNAME . '/export/csv/' . $csvNamePrefix . '_' . date('Y-m-d_H-i-s') . '.csv';
+        $csvFile = $this->helper->getConfig('logfilepath') . '/' . USERLOG_DIRNAME . '/export/csv/' . $csvNamePrefix . '_' . date('Y-m-d_H-i-s') . '.csv';
         // file create/open/write
         /** @var \XoopsFileHandler $fileHandler */
-        $fileHandler = XoopsFile::getHandler();
+        $fileHandler = \XoopsFile::getHandler();
         $fileHandler->__construct($csvFile, false);
         // force to create file if not exist
         if (!$fileHandler->exists()) {
@@ -510,8 +512,8 @@ class UserlogLog extends XoopsObject
         $start = 0,
         $options = null,
         $sort = 'log_time',
-        $order = 'DESC'
-    ) {
+        $order = 'DESC')
+    {
         $logs    = [];
         $logsStr = $this->readFiles($log_files);
         // if no logs return empty array and total = 0
@@ -580,7 +582,7 @@ class UserlogLog extends XoopsObject
                 if (1 == count($val_arr)) {
                     $val_int = $val_arr[0];
                     if ('log_time' === $op || 'last_login' === $op) {
-                        $val_int = time() - $this->userlog->getSinceTime($val_int);
+                        $val_int = time() - $this->helper->getSinceTime($val_int);
                     }
                     // query is one int $t (=, < , >)
                     foreach ($logs as $id => $log) {
@@ -679,17 +681,17 @@ class UserlogLog extends XoopsObject
         $logs          = [];
         $logsStr       = $this->readFiles($log_files);
         $data          = implode("\n", $logsStr);
-        $mergeFile     = $this->userlog->getConfig('logfilepath') . '/' . USERLOG_DIRNAME . '/';
-        $mergeFileName = basename($mergeFileName, '.' . $this->userlog->logext);
+        $mergeFile     = $this->helper->getConfig('logfilepath') . '/' . USERLOG_DIRNAME . '/';
+        $mergeFileName = basename($mergeFileName, '.' . $this->helper->logext);
         if (empty($mergeFileName)) {
-            $mergeFile .= $this->userlog->getConfig('logfilename') . '_merge_' . count($log_files) . '_files_' . date('Y-m-d_H-i-s');
+            $mergeFile .= $this->helper->getConfig('logfilename') . '_merge_' . count($log_files) . '_files_' . date('Y-m-d_H-i-s');
         } else {
             $mergeFile .= $mergeFileName;
         }
-        $mergeFile .= '.' . $this->userlog->logext;
+        $mergeFile .= '.' . $this->helper->logext;
 
         // file create/open/write
-        $fileHandler = XoopsFile::getHandler();
+        $fileHandler = \XoopsFile::getHandler();
         $fileHandler->__construct($mergeFile, false); //to see if file exist
         if ($fileHandler->exists()) {
             $this->setErrors("file ({$mergeFile}) is exist");
@@ -720,10 +722,10 @@ class UserlogLog extends XoopsObject
     public function readFile($log_file = null)
     {
         if (!$log_file) {
-            $log_file = $this->userlog->getWorkingFile();
+            $log_file = $this->helper->getWorkingFile();
         }
         // file open/read
-        $fileHandler = XoopsFile::getHandler();
+        $fileHandler = \XoopsFile::getHandler();
         // not create file if not exist
         $fileHandler->__construct($log_file, false);
         if (!$fileHandler->exists()) {
@@ -758,7 +760,7 @@ class UserlogLog extends XoopsObject
         }
         $deletedFiles = 0;
         // file open/read
-        $fileHandler = XoopsFile::getHandler();
+        $fileHandler = \XoopsFile::getHandler();
         foreach ($log_files as $file) {
             $fileHandler->__construct($file, false);
             if (!$fileHandler->exists()) {
@@ -790,7 +792,7 @@ class UserlogLog extends XoopsObject
             return false;
         }
         // check if file exist
-        $fileHandler = XoopsFile::getHandler();
+        $fileHandler = \XoopsFile::getHandler();
         $fileHandler->__construct($log_file, false);
         if (!$fileHandler->exists()) {
             $this->setErrors("({$log_file}) is a folder or is not exist");
@@ -798,11 +800,11 @@ class UserlogLog extends XoopsObject
             return false;
         }
 
-        $newFileName = basename($newFileName, '.' . $this->userlog->logext);
+        $newFileName = basename($newFileName, '.' . $this->helper->logext);
         if (empty($newFileName)) {
             $newFileName = $fileHandler->name() . '_rename_' . date('Y-m-d_H-i-s');
         }
-        $newFile = dirname($log_file) . '/' . $newFileName . '.' . $this->userlog->logext;
+        $newFile = dirname($log_file) . '/' . $newFileName . '.' . $this->helper->logext;
         // check if new file exist => return false
         $fileHandler->__construct($newFile, false);
         if ($fileHandler->exists()) {
@@ -834,7 +836,7 @@ class UserlogLog extends XoopsObject
             return false;
         }
         // check if file exist
-        $fileHandler = XoopsFile::getHandler();
+        $fileHandler = \XoopsFile::getHandler();
         $fileHandler->__construct($log_file, false);
         if (!$fileHandler->exists()) {
             $this->setErrors("({$log_file}) is a folder or is not exist");
@@ -842,11 +844,11 @@ class UserlogLog extends XoopsObject
             return false;
         }
 
-        $newFileName = basename($newFileName, '.' . $this->userlog->logext);
+        $newFileName = basename($newFileName, '.' . $this->helper->logext);
         if (empty($newFileName)) {
             $newFileName = $fileHandler->name() . '_copy_' . date('Y-m-d_H-i-s');
         }
-        $newFile = dirname($log_file) . '/' . $newFileName . '.' . $this->userlog->logext;
+        $newFile = dirname($log_file) . '/' . $newFileName . '.' . $this->helper->logext;
         // check if new file exist => return false
         $fileHandler->__construct($newFile, false);
         if ($fileHandler->exists()) {
@@ -871,7 +873,7 @@ class UserlogLog extends XoopsObject
      */
     public function getFilesFromFolders($folders = [])
     {
-        list($allFiles, $totalFiles) = $this->userlog->getAllLogFiles();
+        list($allFiles, $totalFiles) = $this->helper->getAllLogFiles();
         if (empty($totalFiles)) {
             return [];
         }
@@ -901,7 +903,7 @@ class UserlogLog extends XoopsObject
         $pathFiles = $this->getFilesFromFolders($log_files);
         $log_files = array_unique(array_merge($log_files, $pathFiles));
         // file open/read
-        $fileHandler = XoopsFile::getHandler();
+        $fileHandler = \XoopsFile::getHandler();
         foreach ($log_files as $key => $file) {
             $fileHandler->__construct($file, false);
             if (!$fileHandler->exists()) {
@@ -930,11 +932,11 @@ class UserlogLog extends XoopsObject
             return false;
         }
         //this folder must be writeable by the server
-        $zipFolder     = $this->userlog->getConfig('logfilepath') . '/' . USERLOG_DIRNAME . '/zip';
-        $folderHandler = XoopsFile::getHandler('folder', $zipFolder, true);// create if not exist
+        $zipFolder     = $this->helper->getConfig('logfilepath') . '/' . USERLOG_DIRNAME . '/zip';
+        $folderHandler = \XoopsFile::getHandler('folder', $zipFolder, true);// create if not exist
         $zipFileName   = basename($zipFileName, '.zip');
         if (empty($zipFileName)) {
-            $zipFileName = $this->userlog->getConfig('logfilename') . '_zip_' . $totalFiles . '_files_' . date('Y-m-d_H-i-s') . '.zip';
+            $zipFileName = $this->helper->getConfig('logfilename') . '_zip_' . $totalFiles . '_files_' . date('Y-m-d_H-i-s') . '.zip';
         } else {
             $zipFileName .= '.zip';
         }
@@ -973,15 +975,15 @@ class UserlogLog extends XoopsObject
     {
         // $modversion['config'][$i]['options'] = array(_AM_USERLOG_FILE_WORKING=>'0',_AM_USERLOG_STATS_FILEALL=>'all');
         if (0 == count($currentFile) || '0' == $currentFile[0]) {
-            $currentFile = $this->userlog->getWorkingFile();
+            $currentFile = $this->helper->getWorkingFile();
         }
-        $fileEl = new XoopsFormSelect(_AM_USERLOG_FILE, 'file', $currentFile, $size, $multi);
-        list($allFiles, $totalFiles) = $this->userlog->getAllLogFiles();
+        $fileEl = new \XoopsFormSelect(_AM_USERLOG_FILE, 'file', $currentFile, $size, $multi);
+        list($allFiles, $totalFiles) = $this->helper->getAllLogFiles();
         if (empty($totalFiles)) {
             return $fileEl;
         }
-        $log_file_name = $this->userlog->getConfig('logfilename');
-        $working_file  = $log_file_name . '.' . $this->userlog->logext;
+        $log_file_name = $this->helper->getConfig('logfilename');
+        $working_file  = $log_file_name . '.' . $this->helper->logext;
         $fileEl->addOption('all', _AM_USERLOG_STATS_FILEALL);
         foreach ($allFiles as $path => $files) {
             $fileEl->addOption($path, '>' . $path);
@@ -999,9 +1001,9 @@ class UserlogLog extends XoopsObject
     public function setItem()
     {
         // In very rare occasions like newbb the item_id is not in the URL $_REQUEST
-        require_once __DIR__ . '/plugin/plugin.php';
-        require_once __DIR__ . '/plugin/Abstract.php';
-        if ($plugin = Userlog_Module_Plugin::getPlugin($this->userlog->getLogModule()->getVar('dirname'), USERLOG_DIRNAME, true)) {
+        //        require_once __DIR__ . '/plugin/plugin.php';
+        //        require_once __DIR__ . '/plugin/Abstract.php';
+        if ($plugin = Userlog\Plugin\Plugin::getPlugin($this->helper->getLogModule()->getVar('dirname'), USERLOG_DIRNAME, true)) {
             /*
             // get all module scripts can accept an item_name to check if this script is exist
             $scripts = $plugin->item();
@@ -1024,7 +1026,7 @@ class UserlogLog extends XoopsObject
             return true;
         }
         // if there is no plugin, use notifications
-        $not_config = $this->userlog->getLogModule()->getInfo('notification');
+        $not_config = $this->helper->getLogModule()->getInfo('notification');
         if (!empty($not_config)) {
             foreach ($not_config['category'] as $category) {
                 // if $item_id != 0 ---> return true
@@ -1040,421 +1042,5 @@ class UserlogLog extends XoopsObject
         }
 
         return false;
-    }
-}
-
-/**
- * Class UserlogLogHandler
- */
-class UserlogLogHandler extends XoopsPersistableObjectHandler
-{
-    public $userlog = null;
-
-    /**
-     * @param null|XoopsDatabase $db
-     */
-    public function __construct(XoopsDatabase $db)
-    {
-        $this->userlog = Userlog::getInstance();
-        parent::__construct($db, USERLOG_DIRNAME . '_log', 'UserlogLog', 'log_id', 'log_time');
-    }
-
-    /**
-     * @param int    $limit
-     * @param int    $start
-     * @param null   $otherCriteria
-     * @param string $sort
-     * @param string $order
-     * @param null   $fields
-     * @param bool   $asObject
-     * @param bool   $id_as_key
-     *
-     * @return mixed
-     */
-    public function getLogs(
-        $limit = 0,
-        $start = 0,
-        $otherCriteria = null,
-        $sort = 'log_id',
-        $order = 'DESC',
-        $fields = null,
-        $asObject = true,
-        $id_as_key = true
-    ) {
-        $criteria = new CriteriaCompo();
-        if (!empty($otherCriteria)) {
-            $criteria->add($otherCriteria);
-        }
-        $criteria->setLimit($limit);
-        $criteria->setStart($start);
-        $criteria->setSort($sort);
-        $criteria->setOrder($order);
-        $ret =& $this->getAll($criteria, $fields, $asObject, $id_as_key);
-
-        return $ret;
-    }
-
-    /**
-     * @param null $criteria
-     * @param null $fields
-     * @param bool $asObject
-     * @param bool $id_as_key
-     *
-     * @return array
-     */
-    public function getLogsCounts($criteria = null, $fields = null, $asObject = true, $id_as_key = true)
-    {
-        if (is_array($fields) && count($fields) > 0) {
-            if (!in_array($this->keyName, $fields)) {
-                $fields[] = $this->keyName;
-            }
-            $select = implode(',', $fields);
-        } else {
-            $select = '*';
-        }
-        $limit = null;
-        $start = null;
-        $sql   = "SELECT {$select}, COUNT(*) AS count FROM {$this->table}";
-        if (isset($criteria) && is_subclass_of($criteria, 'criteriaelement')) {
-            $sql .= ' ' . $criteria->renderWhere();
-            if ($groupby = $criteria->getGroupby()) {
-                $sql .= !strpos($groupby, 'GROUP BY') ? " GROUP BY {$groupby}" : $groupby;
-            }
-            if ($sort = $criteria->getSort()) {
-                $sql .= " ORDER BY {$sort} " . $criteria->getOrder();
-            }
-            $limit = $criteria->getLimit();
-            $start = $criteria->getStart();
-        }
-        $result   = $this->db->query($sql, $limit, $start);
-        $ret      = [];
-        $retCount = [];
-        if ($asObject) {
-            while (false !== ($myrow = $this->db->fetchArray($result))) {
-                if ($id_as_key) {
-                    $retCount[$myrow[$this->keyName]] = array_pop($myrow);
-                } else {
-                    $retCount[] = array_pop($myrow);
-                }
-                $object = $this->create(false);
-                $object->assignVars($myrow);
-                if ($id_as_key) {
-                    $ret[$myrow[$this->keyName]] = $object;
-                } else {
-                    $ret[] = $object;
-                }
-                unset($object);
-            }
-        } else {
-            $object = $this->create(false);
-            while (false !== ($myrow = $this->db->fetchArray($result))) {
-                if ($id_as_key) {
-                    $retCount[$myrow[$this->keyName]] = array_pop($myrow);
-                } else {
-                    $retCount[] = array_pop($myrow);
-                }
-                $object->assignVars($myrow);
-                if ($id_as_key) {
-                    $ret[$myrow[$this->keyName]] = $object->getValues(array_keys($myrow));
-                } else {
-                    $ret[] = $object->getValues(array_keys($myrow));
-                }
-            }
-            unset($object);
-        }
-
-        return [$ret, $retCount];
-    }
-
-    /**
-     * @param null   $otherCriteria
-     * @param string $notNullFields
-     *
-     * @return int
-     */
-    public function getLogsCount($otherCriteria = null, $notNullFields = '')
-    {
-        $criteria = new CriteriaCompo();
-        if (!empty($otherCriteria)) {
-            $criteria->add($otherCriteria);
-        }
-
-        return $this->getCount($criteria, $notNullFields);
-    }
-
-    /**
-     * Change Field in a table
-     *
-     * @access public
-     *
-     * @param string $field     - name of the field eg: "my_field"
-     * @param string $structure - structure of the field eg: "VARCHAR(50) NOT NULL default ''"
-     * @param        bool
-     *
-     * @return bool
-     */
-    public function changeField($field = null, $structure = null)
-    {
-        $sql = "ALTER TABLE {$this->table} CHANGE {$field} {$field} {$structure}";
-        if (!$result = $this->db->queryF($sql)) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Show Fields in a table - one field or all fields
-     *
-     * @access   public
-     *
-     * @param string $field - name of the field eg: "my_field" or null for all fields
-     *
-     * @internal param array $ret [my_field] = Field    Type    Null    Key        Default        Extra
-     *
-     * @return array|bool
-     */
-    public function showFields($field = null)
-    {
-        $sql = "SHOW FIELDS FROM {$this->table}";
-        if (isset($field)) {
-            $sql .= " LIKE '{$field}'";
-        }
-        if (!$result = $this->db->queryF($sql)) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-        $ret = [];
-        while ($myrow = $this->db->fetchArray($result)) {
-            $ret[$myrow['Field']] = $myrow;
-        }
-
-        return $ret;
-    }
-
-    /**
-     * Add Field in a table
-     *
-     * @access public
-     *
-     * @param string $field     - name of the field eg: "my_field"
-     * @param string $structure - structure of the field eg: "VARCHAR(50) NOT NULL default '' AFTER item_id"
-     * @param        bool
-     *
-     * @return bool
-     */
-    public function addField($field = null, $structure = null)
-    {
-        if (empty($field) || empty($structure)) {
-            return false;
-        }
-        if ($this->showFields($field)) {
-            return false;
-        } // field is exist
-        $sql = "ALTER TABLE {$this->table} ADD {$field} {$structure}";
-        if (!$result = $this->db->queryF($sql)) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Drop Field in a table
-     *
-     * @access public
-     *
-     * @param string $field - name of the field
-     * @param        bool
-     *
-     * @return bool
-     */
-    public function dropField($field = null)
-    {
-        if (empty($field)) {
-            return false;
-        }
-        if (!$this->showFields($field)) {
-            return false;
-        } // field is not exist
-        $sql = "ALTER TABLE {$this->table} DROP {$field}";
-        if (!$result = $this->db->queryF($sql)) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Show index in a table
-     *
-     * @access   public
-     *
-     * @param string $index - name of the index (will be used in KEY_NAME)
-     * @internal param array $ret = Table    Non_unique    Key_name    Seq_in_index    Column_name        Collation    Cardinality        Sub_part    Packed    Null    Index_type    Comment    Index_comment
-     *
-     * @return array|bool
-     */
-    public function showIndex($index = null)
-    {
-        $sql = "SHOW INDEX FROM {$this->table}";
-        if (isset($index)) {
-            $sql .= " WHERE KEY_NAME = '{$index}'";
-        }
-        if (!$result = $this->db->queryF($sql)) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-        $ret = [];
-        while ($myrow = $this->db->fetchArray($result)) {
-            $ret[] = $myrow;
-        }
-
-        return $ret;
-    }
-
-    /**
-     * Add Index to a table
-     *
-     * @access public
-     *
-     * @param string $index      - name of the index
-     * @param array  $fields     - array of table fields should be in the index
-     * @param string $index_type - type of the index array("INDEX", "UNIQUE", "SPATIAL", "FULLTEXT")
-     * @param        bool
-     *
-     * @return bool
-     */
-    public function addIndex($index = null, $fields = [], $index_type = 'INDEX')
-    {
-        if (empty($index) || empty($fields)) {
-            return false;
-        }
-        if ($this->showIndex($index)) {
-            return false;
-        } // index is exist
-        $index_type = strtoupper($index_type);
-        if (!in_array($index_type, ['INDEX', 'UNIQUE', 'SPATIAL', 'FULLTEXT'])) {
-            return false;
-        }
-        $fields = is_array($fields) ? implode(',', $fields) : $fields;
-        $sql    = "ALTER TABLE {$this->table} ADD {$index_type} {$index} ( {$fields} )";
-        if (!$result = $this->db->queryF($sql)) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Drop index in a table
-     *
-     * @access public
-     *
-     * @param string $index - name of the index
-     * @param        bool
-     *
-     * @return bool
-     */
-    public function dropIndex($index = null)
-    {
-        if (empty($index)) {
-            return false;
-        }
-        if (!$this->showIndex($index)) {
-            return false;
-        } // index is not exist
-        $sql = "ALTER TABLE {$this->table} DROP INDEX {$index}";
-        if (!$result = $this->db->queryF($sql)) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Change Index = Drop index + Add Index
-     *
-     * @access public
-     *
-     * @param string $index      - name of the index
-     * @param array  $fields     - array of table fields should be in the index
-     * @param string $index_type - type of the index array("INDEX", "UNIQUE", "SPATIAL", "FULLTEXT")
-     * @param        bool
-     *
-     * @return bool
-     */
-    public function changeIndex($index = null, $fields = [], $index_type = 'INDEX')
-    {
-        if ($this->showIndex($index) && !$this->dropIndex($index)) {
-            return false;
-        } // if index is exist but cannot drop it
-
-        return $this->addIndex($index, $fields, $index_type);
-    }
-
-    /**
-     * Show if the object table or any other table is exist in database
-     *
-     * @access   public
-     *
-     * @param string $table or $db->prefix("{$table}") eg: $db->prefix("bb_forums") or "bb_forums" will return same result
-     * @internal param bool $found
-     *
-     * @return bool
-     */
-    public function showTable($table = null)
-    {
-        if (empty($table)) {
-            $table = $this->table;
-        } // the table for this object
-        // check if database prefix is not added yet and then add it!!!
-        if (0 !== strpos($table, $this->db->prefix() . '_')) {
-            $table = $this->db->prefix("{$table}");
-        }
-        $result = $this->db->queryF("SHOW TABLES LIKE '{$table}'");
-        $found  = $this->db->getRowsNum($result);
-
-        return empty($found) ? false : true;
-    }
-
-    /**
-     * Rename an old table to the current object table in database
-     *
-     * @access public
-     *
-     * @param string $oldTable or $db->prefix("{$oldTable}") eg: $db->prefix("bb_forums") or "bb_forums" will return same result
-     * @param        bool
-     *
-     * @return bool
-     */
-    public function renameTable($oldTable)
-    {
-        if ($this->showTable() || !$this->showTable($oldTable)) {
-            return false;
-        } // table is current || oldTable is not exist
-        // check if database prefix is not added yet and then add it!!!
-        if (0 !== strpos($oldTable, $this->db->prefix() . '_')) {
-            $oldTable = $this->db->prefix("{$oldTable}");
-        }
-        if (!$result = $this->db->queryF("ALTER TABLE {$oldTable} RENAME {$this->table}")) {
-            xoops_error($this->db->error() . '<br>' . $sql);
-
-            return false;
-        }
-
-        return true;
     }
 }

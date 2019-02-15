@@ -24,7 +24,7 @@ defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 /**
  * Class UserlogCorePreload
  */
-class UserlogCorePreload extends XoopsPreloadItem
+class UserlogCorePreload extends \XoopsPreloadItem
 {
     // to log main part of modules
     /**
@@ -50,6 +50,9 @@ class UserlogCorePreload extends XoopsPreloadItem
      */
     public static function eventCoreIncludeCommonEnd($args)
     {
+        // to add PSR-4 autoloader
+        include __DIR__ . '/autoloader.php';
+
         include __DIR__ . '/../include/postlog.php';
     }
     // in XOOPS255/index.php (homepage) when no module is set for start page there is a bug in XOOPS255/header.php exit() should be commented
