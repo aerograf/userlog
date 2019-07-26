@@ -1,8 +1,6 @@
-<?php namespace XoopsModules\Userlog;
+<?php
 
-use Xmf\Request;
-use XoopsModules\Userlog;
-use XoopsModules\Userlog\Common;
+namespace XoopsModules\Userlog;
 
 /**
  * Class Utility

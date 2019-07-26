@@ -26,12 +26,11 @@ defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/common.php';
 
 /**
- * @param XoopsModule $module
+ * @param \XoopsModule $module
  * @param null        $prev_version
  *
  * @return bool|mixed
  */
-
 function xoops_module_update_userlog(\XoopsModule $module, $prev_version = null)
 {
     if ($prev_version == round($module->getInfo('version') * 100, 2)) {
@@ -65,19 +64,20 @@ function xoops_module_update_userlog(\XoopsModule $module, $prev_version = null)
 // update database from v1 to 1.01 (Beta1 to RC1)
 // module_name VARCHAR(25) change to VARCHAR(50)
 /**
- * @param XoopsModule $module
+ * @param \XoopsModule $module
  *
  * @return bool
  */
 function update_userlog_v100(\XoopsModule $module)
 {
-    $field  = 'module_name';
+    $field = 'module_name';
+    /** @var Userlog\Helper $helper */
     $helper = Userlog\Helper::getInstance();
-    $ret    = $helper->getHandler('log')->showFields($field);
+    $ret    = $helper->getHandler('Log')->showFields($field);
     preg_match_all('!\d+!', $ret[$field]['Type'], $nums);
     // only change if module_name Type was VARCHAR(25)
     if (25 == $nums[0][0]) {
-        $ret2 = $helper->getHandler('log')->changeField($field, "VARCHAR(50) NOT NULL default ''");
+        $ret2 = $helper->getHandler('Log')->changeField($field, "VARCHAR(50) NOT NULL default ''");
     } else {
         $ret2 = true;
         $module->setErrors("Your table field ({$field}) with size {$ret[$field]['Type']} don't need change.");
@@ -88,17 +88,18 @@ function update_userlog_v100(\XoopsModule $module)
 
 // add ",active,inside,outside,unset_pass" to all settings
 /**
- * @param XoopsModule $module
+ * @param \XoopsModule $module
  *
  * @return bool
  */
 function update_userlog_v114(\XoopsModule $module)
 {
+    /** @var Userlog\Helper $helper */
     $helper     = Userlog\Helper::getInstance();
-    $logsetsObj = $helper->getHandler('setting')->getAll();
+    $logsetsObj = $helper->getHandler('Setting')->getAll();
     $ret        = true;
     foreach ($logsetsObj as $setObj) {
-        if (strpos($setObj->getVar('options'), 'active')) {
+        if (mb_strpos($setObj->getVar('options'), 'active')) {
             continue;
         }
         $setObj->setVar('options', $setObj->getVar('options') . ',active,inside,outside,unset_pass');
@@ -112,25 +113,26 @@ function update_userlog_v114(\XoopsModule $module)
 }
 
 /**
- * @param XoopsModule $module
+ * @param \XoopsModule $module
  *
  * @return mixed
  */
 function update_userlog_v115(\XoopsModule $module)
 {
+    /** @var Userlog\Helper $helper */
     $helper = Userlog\Helper::getInstance();
     // Only change the field from INDEX to UNIQUE if it is not unique
     // if (isset($indexArr[0]["Non_unique"]) || $indexArr[0]["Non_unique"] == 1) { }
     // change the index in _stats table
-    if (!$ret = $helper->getHandler('stats')->changeIndex('stats_type_link_period', ['stats_type', 'stats_link', 'stats_period'], 'UNIQUE')) {
+    if (!$ret = $helper->getHandler('Stats')->changeIndex('stats_type_link_period', ['stats_type', 'stats_link', 'stats_period'], 'UNIQUE')) {
         $module->setErrors("'stats_type_link_period' index is not changed to unique. Warning: do not use module until you change this index to unique.");
     }
     // drop the index in _log table
-    if (!$ret = $helper->getHandler('log')->dropIndex('log_id_uid')) {
+    if (!$ret = $helper->getHandler('Log')->dropIndex('log_id_uid')) {
         $module->setErrors("'log_id_uid' index is not dropped.");
     }
     // add the index in _log table
-    if (!$ret = $helper->getHandler('log')->addIndex('log_time', ['log_time'])) {
+    if (!$ret = $helper->getHandler('Log')->addIndex('log_time', ['log_time'])) {
         $module->setErrors("'log_time' index is not added.");
     }
 
@@ -138,7 +140,7 @@ function update_userlog_v115(\XoopsModule $module)
 }
 
 /**
- * @param XoopsModule $module
+ * @param \XoopsModule $module
  *
  * @return bool
  */

@@ -27,6 +27,7 @@ require_once __DIR__ . '/admin_header.php';
 require_once XOOPS_ROOT_PATH . '/class/pagenav.php';
 
 xoops_cp_header();
+/** @var Userlog\Helper $helper */
 $helper = Userlog\Helper::getInstance();
 $op     = Request::getString('op');
 // Where do we start ?
@@ -69,7 +70,6 @@ switch ($op) {
             xoops_cp_footer();
         }
         break;
-
     case 'addsetting':
         $message = _AM_USERLOG_SET_EDIT;
         // check to insure only one (logby and unique_id) added to database
@@ -102,14 +102,14 @@ switch ($op) {
                                       'module',
                                       'module_name',
                                       'item_name',
-                                      'item_id'
+                                      'item_id',
                                   ], $option);
         }
         // always log id and time
         if (!empty($option[0])) {
             $option = array_merge(['log_id', 'log_time'], $option);
         }
-        $options_arr = $logsetObj->getOptions($option, 'key');// empty means all. sanitize options
+        $options_arr = $logsetObj->getOptions($option, 'key'); // empty means all. sanitize options
         $logsetObj->setVar('options', implode(',', $options_arr));
         $logsetObj->setVar('scope', implode(',', $scope));
         if ($logsetObj->storeSet(true)) {

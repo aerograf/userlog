@@ -27,7 +27,8 @@ require_once __DIR__ . '/admin_header.php';
 xoops_cp_header();
 
 $adminObject = \Xmf\Module\Admin::getInstance();
-$helper      = Userlog\Helper::getInstance();
+/** @var Userlog\Helper $helper */
+$helper = Userlog\Helper::getInstance();
 
 // update all time stats
 $statsObj = Userlog\Stats::getInstance();
@@ -49,19 +50,19 @@ $adminObject->addInfoBox(_AM_USERLOG_STATS_ABSTRACT);
 $periods = array_flip($statsObj->period);
 $types   = $statsObj->type;
 foreach ($stats as $type => $arr) {
-    if (strlen($type) > 10) {
+    if (mb_strlen($type) > 10) {
         continue;
     }
     foreach ($arr as $period => $arr2) {
         // use sprintf in moduleadmin: sprintf($text, "<span style='color : " . $color . "; font-weight : bold;'>" . $value . "</span>")
-        $adminObject->addInfoBoxLine(sprintf(sprintf(_AM_USERLOG_STATS_TYPE_PERIOD, '%1$s', $types[$type], constant('_AM_USERLOG_' . strtoupper($periods[$period]))) . ' ' . _AM_USERLOG_STATS_TIME_UPDATE . ' ' . $arr2['time_update'], $arr2['value']), '', $arr2['value'] ? 'GREEN' : 'RED');
+        $adminObject->addInfoBoxLine(sprintf(sprintf(_AM_USERLOG_STATS_TYPE_PERIOD, '%1$s', $types[$type], constant('_AM_USERLOG_' . mb_strtoupper($periods[$period]))) . ' ' . _AM_USERLOG_STATS_TIME_UPDATE . ' ' . $arr2['time_update'], $arr2['value']), '', $arr2['value'] ? 'GREEN' : 'RED');
     }
 }
 // if there is no file in working check the parent folder chmod
 if ((isset($stats['fileall'][0]) && 0 == $stats['fileall'][0]['value']) || (0 == $stats['file' . $helper->getWorkingFile()][0]['value'])) {
     $adminObject->addConfigBoxLine([$helper->getConfig('logfilepath'), 755], 'chmod');
     // core feature: if(!$adminObject->addConfigBoxLine())
-    if (substr(decoct(fileperms($helper->getConfig('logfilepath'))), 2) < 755) {
+    if (mb_substr(decoct(fileperms($helper->getConfig('logfilepath'))), 2) < 755) {
         $adminObject->addConfigBoxLine("<span class='bold red'>" . sprintf(_AM_USERLOG_CONFIG_CHMOD_ERROR, $helper->getConfig('logfilepath'), 755) . '</span>', 'default');
         $adminObject->addConfigBoxLine("<span class='bold red'>" . sprintf(_AM_USERLOG_CONFIG_CREATE_FOLDER, $helper->getConfig('logfilepath') . '/' . USERLOG_DIRNAME, 755) . '</span>', 'default');
     }

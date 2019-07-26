@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog;
+<?php
+
+namespace XoopsModules\Userlog;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -21,11 +23,10 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
-use Xmf\Request;
 use XoopsModules\Userlog;
 
 defined('XOOPS_ROOT_PATH') || die('Restricted access');
-require_once  dirname(__DIR__) . '/include/common.php';
+require_once dirname(__DIR__) . '/include/common.php';
 
 /**
  * Class Userlog\LogHandler
@@ -37,8 +38,9 @@ class LogHandler extends \XoopsPersistableObjectHandler
     /**
      * @param null|\XoopsDatabase $db
      */
-    public function __construct(\XoopsDatabase $db)
+    public function __construct(\XoopsDatabase $db = null)
     {
+        /** @var Userlog\Helper $this ->helper */
         $this->helper = Userlog\Helper::getInstance();
         parent::__construct($db, USERLOG_DIRNAME . '_log', Log::class, 'log_id', 'log_time');
     }
@@ -63,8 +65,8 @@ class LogHandler extends \XoopsPersistableObjectHandler
         $order = 'DESC',
         $fields = null,
         $asObject = true,
-        $id_as_key = true
-    ) {
+        $id_as_key = true)
+    {
         $criteria = new \CriteriaCompo();
         if (!empty($otherCriteria)) {
             $criteria->add($otherCriteria);
@@ -73,7 +75,7 @@ class LogHandler extends \XoopsPersistableObjectHandler
         $criteria->setStart($start);
         $criteria->setSort($sort);
         $criteria->setOrder($order);
-        $ret =& $this->getAll($criteria, $fields, $asObject, $id_as_key);
+        $ret = &$this->getAll($criteria, $fields, $asObject, $id_as_key);
 
         return $ret;
     }
@@ -88,7 +90,7 @@ class LogHandler extends \XoopsPersistableObjectHandler
      */
     public function getLogsCounts($criteria = null, $fields = null, $asObject = true, $id_as_key = true)
     {
-        if (is_array($fields) && count($fields) > 0) {
+        if ($fields && is_array($fields)) {
             if (!in_array($this->keyName, $fields)) {
                 $fields[] = $this->keyName;
             }
@@ -102,7 +104,7 @@ class LogHandler extends \XoopsPersistableObjectHandler
         if (isset($criteria) && is_subclass_of($criteria, 'CriteriaElement')) {
             $sql .= ' ' . $criteria->renderWhere();
             if ($groupby = $criteria->getGroupby()) {
-                $sql .= !strpos($groupby, 'GROUP BY') ? " GROUP BY {$groupby}" : $groupby;
+                $sql .= !mb_strpos($groupby, 'GROUP BY') ? " GROUP BY {$groupby}" : $groupby;
             }
             if ($sort = $criteria->getSort()) {
                 $sql .= " ORDER BY {$sort} " . $criteria->getOrder();
@@ -325,7 +327,7 @@ class LogHandler extends \XoopsPersistableObjectHandler
         if ($this->showIndex($index)) {
             return false;
         } // index is exist
-        $index_type = strtoupper($index_type);
+        $index_type = mb_strtoupper($index_type);
         if (!in_array($index_type, ['INDEX', 'UNIQUE', 'SPATIAL', 'FULLTEXT'])) {
             return false;
         }
@@ -405,8 +407,8 @@ class LogHandler extends \XoopsPersistableObjectHandler
             $table = $this->table;
         } // the table for this object
         // check if database prefix is not added yet and then add it!!!
-        if (0 !== strpos($table, $this->db->prefix() . '_')) {
-            $table = $this->db->prefix((string)($table));
+        if (0 !== mb_strpos($table, $this->db->prefix() . '_')) {
+            $table = $this->db->prefix((string)$table);
         }
         $result = $this->db->queryF("SHOW TABLES LIKE '{$table}'");
         $found  = $this->db->getRowsNum($result);
@@ -430,8 +432,8 @@ class LogHandler extends \XoopsPersistableObjectHandler
             return false;
         } // table is current || oldTable is not exist
         // check if database prefix is not added yet and then add it!!!
-        if (0 !== strpos($oldTable, $this->db->prefix() . '_')) {
-            $oldTable = $this->db->prefix((string)($oldTable));
+        if (0 !== mb_strpos($oldTable, $this->db->prefix() . '_')) {
+            $oldTable = $this->db->prefix((string)$oldTable);
         }
         if (!$result = $this->db->queryF("ALTER TABLE {$oldTable} RENAME {$this->table}")) {
             xoops_error($this->db->error() . '<br>' . $sql);

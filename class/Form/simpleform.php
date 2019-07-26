@@ -16,7 +16,6 @@
  * @since           2.0.0
  * @author          Kazumi Ono (AKA onokazu) http://www.myweb.ne.jp/, http://jp.xoops.org/
  */
-
 defined('XOOPS_ROOT_PATH') || die('Restricted access');
 
 /**

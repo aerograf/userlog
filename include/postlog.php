@@ -25,8 +25,9 @@ use XoopsModules\Userlog;
 defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/common.php';
 $moduleDirName = basename(dirname(__DIR__));
-$helper        = Userlog\Helper::getInstance();
+/** @var Userlog\Helper $helper */
+$helper = Userlog\Helper::getInstance();
 
 if (!empty($_POST) && $helper->getConfig('postlog')) {
-    include __DIR__ . '/log.php';
+    require_once __DIR__ . '/log.php';
 }

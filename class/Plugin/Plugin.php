@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog\Plugin;
+<?php
+
+namespace XoopsModules\Userlog\Plugin;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -91,7 +93,6 @@ class Plugin
      *
      * @return bool
      */
-
     public static function loadFile($file, $once = true)
     {
         self::_securityCheck($file);
@@ -99,7 +100,7 @@ class Plugin
             if ($once) {
                 require_once $file;
             } else {
-                include $file;
+                require_once $file;
             }
 
             return true;
@@ -113,7 +114,6 @@ class Plugin
      *
      * @return mixed
      */
-
     public static function fileExists($file)
     {
         static $included = [];

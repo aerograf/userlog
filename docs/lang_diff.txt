@@ -15,14 +15,14 @@ define("_AM_USERLOG_UNSET_PASS","Do not log passwords?");
 
 edit:
 define("_AM_USERLOG_SET_OPTIONS_DSC","Log which user/page data?<br />
-	<b>Notice:</b><br />
-	- Selecting no option means all options.<br />
-	- Uncheck 'Setting is active?' means make this setting idle.<br />
-	- Selecting 'Log visitors come from inside/outside your site?' means log visitor whos referral is inside/outside your website domain.<br />
-	- Selecting 'Do not log passwords?' means inputted passwords in login/register will not be stored.<br />
-	- Selecting no store option (File and/or Database) means Database.<br />
-	- Selecting views means store uid, groups, script name, pagetitle,pageadmin, module dirname, module name, item name, item id in Database
-	");
+    <b>Notice:</b><br />
+    - Selecting no option means all options.<br />
+    - Uncheck 'Setting is active?' means make this setting idle.<br />
+    - Selecting 'Log visitors come from inside/outside your site?' means log visitor whos referral is inside/outside your website domain.<br />
+    - Selecting 'Do not log passwords?' means inputted passwords in login/register will not be stored.<br />
+    - Selecting no store option (File and/or Database) means Database.<br />
+    - Selecting views means store uid, groups, script name, pagetitle,pageadmin, module dirname, module name, item name, item id in Database
+    ");
 
 Version 1.12
 ----------------

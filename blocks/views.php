@@ -23,7 +23,7 @@
 use XoopsModules\Userlog;
 
 defined('XOOPS_ROOT_PATH') || die('Restricted access');
-require_once  dirname(__DIR__) . '/include/common.php';
+require_once dirname(__DIR__) . '/include/common.php';
 
 if (defined('USERLOG_BLOCK_VIEWS_DEFINED')) {
     return;
@@ -84,7 +84,7 @@ function userlog_views_edit($options)
     // $form = new \XoopsBlockForm(); //reserve for 2.6
     $form = new \XoopsThemeForm(_AM_USERLOG_VIEW, 'views', '');
 
-    /** @var XoopsModuleHandler $moduleHandler */
+    /** @var \XoopsModuleHandler $moduleHandler */
     $moduleHandler = xoops_getHandler('module');
     $criteria      = new \CriteriaCompo();
     $criteria->add(new \Criteria('hasnotification', 1));
@@ -149,7 +149,7 @@ function userlog_views_edit($options)
                                  'count'        => _AM_USERLOG_VIEW,
                                  'module'       => _AM_USERLOG_MODULE,
                                  'module_name'  => _AM_USERLOG_MODULE_NAME,
-                                 'module_count' => _AM_USERLOG_VIEW_MODULE
+                                 'module_count' => _AM_USERLOG_VIEW_MODULE,
                              ]);
     $sortEle->setDescription(_AM_USERLOG_SORT_DSC);
 

@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog;
+<?php
+
+namespace XoopsModules\Userlog;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -21,15 +23,15 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
-use Xmf\Request;
-use XoopsModules\Userlog;
 use phpbrowscap;
+use phpbrowscap\Browscap;
+use Xmf\Request;
 
 defined('XOOPS_ROOT_PATH') || die('Restricted access');
 require_once __DIR__ . '/phpbrowscap/Browscap.php';
 
 // The Browscap class is in the phpbrowscap namespace, so import it
-use phpbrowscap\Browscap;
+use XoopsModules\Userlog;
 
 /**
  * Class Userlog
@@ -51,7 +53,7 @@ class Helper extends \Xmf\Module\Helper
     {
         $moduleDirName      = basename(dirname(__DIR__));
         $this->debug        = $debug;
-        $this->dirname      = $moduleDirName;
+        parent::__construct($moduleDirName);
         $this->cookiePrefix = $moduleDirName . '_' . ($this->getUser() ? $this->getUser()->getVar('uid') : '');
     }
 
@@ -116,9 +118,6 @@ class Helper extends \Xmf\Module\Helper
         return $dirNames;
     }
 
-    /**
-     * @return null
-     */
     public function getUser()
     {
         if (null === $this->user) {
@@ -140,9 +139,6 @@ class Helper extends \Xmf\Module\Helper
         return $this->groupList;
     }
 
-    /**
-     * @return null
-     */
     public function getBrowsCap()
     {
         if (null === $this->browscap) {
@@ -277,7 +273,6 @@ class Helper extends \Xmf\Module\Helper
      */
     public function probCheck($prob = 11)
     {
-        mt_srand((double)microtime() * 1000000);
         // check probabillity 11 means 10%, 100 means 100%
         $ret = mt_rand(1, 100) > $prob;
 
@@ -288,8 +283,6 @@ class Helper extends \Xmf\Module\Helper
      * @param null $post
      * @param int  $uid
      * @param bool $unsetPass
-     *
-     * @return null
      */
     public function patchLoginHistory($post = null, $uid = 0, $unsetPass = true)
     {
@@ -310,10 +303,10 @@ class Helper extends \Xmf\Module\Helper
         if (is_object($loginSuccess)) {
             $postPatch['success'] = 1;
             $postPatch['uid']     = $loginSuccess->getVar('uid');
-            if (0 < ($level = $loginSuccess->getVar('level'))) {
+            if (($level = $loginSuccess->getVar('level')) > 0) {
                 $postPatch['level'] = $level;
             }
-            if (0 < ($last_visit = $loginSuccess->getVar('last_login'))) {
+            if (($last_visit = $loginSuccess->getVar('last_login')) > 0) {
                 $postPatch['last_visit'] = $last_visit;
             }
         }
@@ -327,8 +320,8 @@ class Helper extends \Xmf\Module\Helper
         if (isset($xoopsModule) && is_object($xoopsModule)) {
             $this->logmodule = $xoopsModule;
         } else {
-            $hModule         = xoops_getHandler('module');
-            $this->logmodule = $hModule->getByDirname('system');
+            $moduleHandler   = xoops_getHandler('module');
+            $this->logmodule = $moduleHandler->getByDirname('system');
             $this->logmodule->setVar('dirname', 'system-root');
         }
         $this->addLog('INIT LOGMODULE');
@@ -389,9 +382,16 @@ class Helper extends \Xmf\Module\Helper
     public function getHandler($name)
     {
         $ret   = false;
-        $db    = \XoopsDatabaseFactory::getDatabaseConnection();
-        $class = '\\XoopsModules\\' . ucfirst(strtolower(basename(dirname(__DIR__)))) . '\\' . $name . 'Handler';
-        $ret   = new $class($db);
+
+        $class = '\\XoopsModules\\' . ucfirst(mb_strtolower(basename(dirname(__DIR__)))) . '\\' . $name . 'Handler';
+        if (!class_exists($class)) {
+            throw new \RuntimeException("Class '$class' not found");
+        }
+        /** @var \XoopsMySQLDatabase $db */
+        $db     = \XoopsDatabaseFactory::getDatabaseConnection();
+        $helper = self::getInstance();
+        $ret    = new $class($db, $helper);
+        $this->addLog("Getting handler '{$name}'");
         return $ret;
     }
 }

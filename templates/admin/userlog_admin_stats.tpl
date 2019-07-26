@@ -23,22 +23,22 @@
         </fieldset>
         <fieldset>
             <legend class="label"><{$smarty.const._AM_USERLOG_STATS_REFERRAL}></legend>
-            <{includeq file="db:`$smarty.const.USERLOG_DIRNAME`_block_stats_type.tpl" block=$refViews}>
+            <{include file="db:`$smarty.const.USERLOG_DIRNAME`_block_stats_type.tpl" block=$refViews}>
             <legend class="label"></legend>
         </fieldset>
         <fieldset>
             <legend class="label"><{$smarty.const._AM_USERLOG_STATS_BROWSER}></legend>
-            <{includeq file="db:`$smarty.const.USERLOG_DIRNAME`_block_stats_type.tpl" block=$browserViews}>
+            <{include file="db:`$smarty.const.USERLOG_DIRNAME`_block_stats_type.tpl" block=$browserViews}>
             <legend class="label"></legend>
         </fieldset>
         <fieldset>
             <legend class="label"><{$smarty.const._AM_USERLOG_STATS_OS}></legend>
-            <{includeq file="db:`$smarty.const.USERLOG_DIRNAME`_block_stats_type.tpl" block=$OSViews}>
+            <{include file="db:`$smarty.const.USERLOG_DIRNAME`_block_stats_type.tpl" block=$OSViews}>
             <legend class="label"></legend>
         </fieldset>
         <fieldset>
             <legend class="label"><{$smarty.const._AM_USERLOG_LOGIN_REG_HISTORY}></legend>
-            <{includeq file="db:`$smarty.const.USERLOG_DIRNAME`_block_login_reg_history.tpl" block=$loginsHistory}>
+            <{include file="db:`$smarty.const.USERLOG_DIRNAME`_block_login_reg_history.tpl" block=$loginsHistory}>
             <legend class="label"></legend>
         </fieldset>
     </div>
@@ -46,7 +46,7 @@
         <{$stats_abstract}>
         <fieldset>
             <legend class="label"><{$smarty.const._AM_SYSTEM_MODULES_ADMIN}></legend>
-            <{includeq file="db:`$smarty.const.USERLOG_DIRNAME`_admin_stats_moduleadmin.tpl" block=$moduleAdmin}>
+            <{include file="db:`$smarty.const.USERLOG_DIRNAME`_admin_stats_moduleadmin.tpl" block=$moduleAdmin}>
             <legend class="label"></legend>
         </fieldset>
     </div>

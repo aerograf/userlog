@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog\Plugin;
+<?php
+
+namespace XoopsModules\Userlog\Plugin;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -9,6 +11,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -21,15 +24,15 @@
  */
 
 use Xmf\Request;
-use XoopsModules\Userlog\Plugin;
 use XoopsModules\Newbb;
+use XoopsModules\Userlog\Plugin;
 
 defined('XOOPS_ROOT_PATH') || die('Restricted access');
 
 /**
  * Class NewbbUserlogPlugin
  */
-class NewbbUserlogPlugin extends Plugin\PluginAbstract implements Plugin\PluginInterface
+class newbb extends Plugin\PluginAbstract implements Plugin\PluginInterface
 {
     /**
      * @param string $subscribe_from Name of the script

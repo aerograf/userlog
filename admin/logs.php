@@ -26,6 +26,7 @@ use XoopsModules\Userlog;
 require_once __DIR__ . '/admin_header.php';
 require_once XOOPS_ROOT_PATH . '/class/pagenav.php';
 xoops_cp_header();
+/** @var Userlog\Helper $helper */
 $helper = Userlog\Helper::getInstance();
 // Where do we start ?
 $startentry = Request::getInt('startentry', 0);
@@ -46,14 +47,14 @@ $type_vars = $logsetObj->getOptions('', 'type');
 $criteria = new \CriteriaCompo();
 foreach ($options as $key => $val) {
     // deal with greater than and lower than
-    $tt = substr($key, -2);
+    $tt = mb_substr($key, -2);
     switch ($tt) {
         case 'GT':
-            $op = substr($key, 0, -2);
+            $op = mb_substr($key, 0, -2);
             $t  = '>';
             break;
         case 'LT':
-            $op = substr($key, 0, -2);
+            $op = mb_substr($key, 0, -2);
             $t  = '<';
             break;
         default:
@@ -68,8 +69,8 @@ foreach ($options as $key => $val) {
     if ('text' === $type_vars[$op]) {
         foreach ($val_arr as $qry) {
             // if !QUERY eg: !logs.php,views.php
-            if (0 === strpos($qry, '!')) {
-                $criteria_q[$key]->add(new \Criteria($op, '%' . substr($qry, 1) . '%', 'NOT LIKE'), 'AND');
+            if (0 === mb_strpos($qry, '!')) {
+                $criteria_q[$key]->add(new \Criteria($op, '%' . mb_substr($qry, 1) . '%', 'NOT LIKE'), 'AND');
             } else {
                 $criteria_q[$key]->add(new \Criteria($op, '%' . $qry . '%', 'LIKE'), 'OR');
             }
@@ -121,7 +122,7 @@ if ('del' === $opentry && !empty($confirm)) {
             redirect_header('logs.php?op=' . $query_entry, 10, sprintf(_AM_USERLOG_LOG_DELETE_SUCCESS_QUERY, $numDel, $query_page));
         }
         redirect_header('logs.php?op=' . $query_entry . (!empty($query_page) ? '&amp;' . $query_page : ''), 1, _AM_USERLOG_LOG_DELETE_ERROR);
-    // for file
+        // for file
     } else {
         redirect_header('logs.php?op=' . $query_entry . (!empty($query_page) ? '&amp;' . $query_page : ''), 1, _AM_USERLOG_LOG_DELETE_ERROR);
     }
@@ -173,7 +174,7 @@ $GLOBALS['xoopsTpl']->assign('types', $type_vars);
 // form, elements, headers
 list($form, $elements, $headers) = $logsetObj->logForm($options);
 // START export
-if (0 === strpos($opentry, 'export')) {
+if (0 === mb_strpos($opentry, 'export')) {
     list($opentry, $export) = explode('-', $opentry);
     // if it is not bulk export get the actual logs in the page
     if (is_numeric($log_id[0])) {
@@ -200,7 +201,7 @@ $engineEl->addOption('file', _AM_USERLOG_ENGINE_FILE);
 $engineEl->setDescription(_AM_USERLOG_ENGINE_DSC);
 // file element
 if ('file' === $engine) {
-    $fileEl = $loglogObj->buildFileSelectEle($file, true);// multiselect = true
+    $fileEl = $loglogObj->buildFileSelectEle($file, true); // multiselect = true
     $fileEl->setDescription(_AM_USERLOG_FILE_DSC);
 }
 // limit, sort, order
@@ -228,7 +229,7 @@ $GLOBALS['xoopsTpl']->assign('form', $form->render());
 // END main form
 // START form navigation
 // formNav in the upper section
-require_once USERLOG_ROOT_PATH . '/class/form/simpleform.php';
+require_once USERLOG_ROOT_PATH . '/class/Form/simpleform.php';
 $formNav = new UserlogSimpleForm('', 'logsnav', 'logs.php', 'get');
 foreach ($elements as $key => $ele) {
     $ele->setClass('hidden');

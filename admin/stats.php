@@ -26,6 +26,7 @@ use XoopsModules\Userlog;
 require_once __DIR__ . '/admin_header.php';
 require_once XOOPS_ROOT_PATH . '/class/pagenav.php';
 xoops_cp_header();
+/** @var Userlog\Helper $helper */
 $helper   = Userlog\Helper::getInstance();
 $queryObj = Userlog\Query::getInstance();
 
@@ -54,12 +55,12 @@ $adminObject->addInfoBox(_AM_USERLOG_STATS_ABSTRACT);
 $periods = array_flip($statsObj->period);
 $types   = $statsObj->type;
 foreach ($stats as $type => $arr) {
-    if (strlen($type) > 10) {
+    if (mb_strlen($type) > 10) {
         continue;
     }
     foreach ($arr as $period => $arr2) {
         // use sprintf in moduleadmin: sprintf($text, "<span style='color : " . $color . "; font-weight : bold;'>" . $value . "</span>")
-        $adminObject->addInfoBoxLine(sprintf(_AM_USERLOG_STATS_TYPE_PERIOD, '%1$s', $types[$type], constant('_AM_USERLOG_' . strtoupper($periods[$period])) . ' ' . _AM_USERLOG_STATS_TIME_UPDATE . ' ' . $arr2['time_update'], $arr2['value']), '', $arr2['value'] ? 'GREEN' : 'RED');
+        $adminObject->addInfoBoxLine(sprintf(_AM_USERLOG_STATS_TYPE_PERIOD, '%1$s', $types[$type], constant('_AM_USERLOG_' . mb_strtoupper($periods[$period])) . ' ' . _AM_USERLOG_STATS_TIME_UPDATE . ' ' . $arr2['time_update'], $arr2['value']), '', $arr2['value'] ? 'GREEN' : 'RED');
     }
 }
 $criteria = new \CriteriaCompo();
@@ -92,7 +93,7 @@ $groupViews = $helper->getHandler('Log')->getCounts($criteria);
 if (!empty($groupViews)) {
     $adminObject->addInfoBox(_AM_USERLOG_VIEW_GROUP);
     foreach ($groupViews as $gids => $views) {
-        $groupArr = explode('g', substr($gids, 1)); // remove the first "g" from string
+        $groupArr = explode('g', mb_substr($gids, 1)); // remove the first "g" from string
         $groupArr = array_unique($groupArr);
         foreach ($groupArr as $group) {
             if (isset($gidViews[$group])) {
@@ -125,7 +126,7 @@ $GLOBALS['xoopsTpl']->assign('OSViews', $OSViews);
 // START Login / Register Patch
 $patchLoginFilePatch = USERLOG_ROOT_PATH . '/class/patch/patch_login_history.php';
 if (file_exists($patchLoginFilePatch)) {
-    include $patchLoginFilePatch;
+    require_once $patchLoginFilePatch;
 }
 // END Login / Register Patch
 
@@ -184,7 +185,7 @@ $sortEl->addOptionArray([
                             'count'        => _AM_USERLOG_VIEW,
                             'module'       => _AM_USERLOG_MODULE,
                             'module_name'  => _AM_USERLOG_MODULE_NAME,
-                            'module_count' => _AM_USERLOG_VIEW_MODULE
+                            'module_count' => _AM_USERLOG_VIEW_MODULE,
                         ]);
 $sortEl->setDescription(_AM_USERLOG_SORT_DSC);
 $orderEl = new \XoopsFormSelect(_AM_USERLOG_ORDER, 'orderentry', $orderentry);
