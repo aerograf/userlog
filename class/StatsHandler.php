@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog;
+<?php
+
+namespace XoopsModules\Userlog;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -9,6 +11,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -22,8 +25,8 @@
 
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
-require_once __DIR__ . '/../include/common.php';
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
+require_once dirname(__DIR__) . '/include/common.php';
 xoops_loadLanguage('admin', USERLOG_DIRNAME);
 
 /**
@@ -36,8 +39,9 @@ class StatsHandler extends \XoopsPersistableObjectHandler
     /**
      * @param null|\XoopsDatabase $db
      */
-    public function __construct(\XoopsDatabase $db)
+    public function __construct(\XoopsDatabase $db = null)
     {
+        /** @var Userlog\Helper $this ->helper */
         $this->helper = Userlog\Helper::getInstance();
         parent::__construct($db, USERLOG_DIRNAME . '_stats', Stats::class, 'stats_id', 'stats_type');
     }
@@ -156,7 +160,7 @@ class StatsHandler extends \XoopsPersistableObjectHandler
         if ($this->showIndex($index)) {
             return false;
         } // index is exist
-        $index_type = strtoupper($index_type);
+        $index_type = mb_strtoupper($index_type);
         if (!in_array($index_type, ['INDEX', 'UNIQUE', 'SPATIAL', 'FULLTEXT'])) {
             return false;
         }

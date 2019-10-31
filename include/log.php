@@ -20,9 +20,10 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
+use Xmf\Request;
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 // to insure include only once
 if (defined('USERLOG_LOG_DEFINED')) {
     return;
@@ -31,7 +32,8 @@ define('USERLOG_LOG_DEFINED', true);
 
 require_once __DIR__ . '/common.php';
 $moduleDirName = basename(dirname(__DIR__));
-$helper        = Userlog\Helper::getInstance();
+/** @var Userlog\Helper $helper */
+$helper = Userlog\Helper::getInstance();
 if (!$helper->getConfig('status')) {
     return;
 }
@@ -41,7 +43,7 @@ $setting   = $scope = '';
 list($setting, $scope) = $logsetObj->getSet();
 
 // if there is a setting and setting is active
-if (!empty($setting) && strpos($setting, 'active')) {
+if (!empty($setting) && mb_strpos($setting, 'active')) {
     // check scope
     if (!empty($scope)) { // empty scope means ALL
         $scope_arr = explode(',', $scope);
@@ -59,9 +61,9 @@ if (!empty($setting) && strpos($setting, 'active')) {
     }
 
     // if there is referer option inside/outside
-    if ((empty($tolog['outside']) || empty($tolog['inside'])) && !empty($_SERVER['HTTP_REFERER'])) {
+    if ((empty($tolog['outside']) || empty($tolog['inside'])) && !empty(Request::getString('HTTP_REFERER', '', 'SERVER'))) {
         // if referer is outside
-        if (false === strpos($_SERVER['HTTP_REFERER'], XOOPS_URL)) {
+        if (false === mb_strpos(Request::getString('HTTP_REFERER', '', 'SERVER'), XOOPS_URL)) {
             if (empty($tolog['outside'])) {
                 return true;
             }
@@ -76,7 +78,7 @@ if (!empty($setting) && strpos($setting, 'active')) {
     }
 
     // create log
-    $logObj = $helper->getHandler('log')->create();
+    $logObj = $helper->getHandler('Log')->create();
 
     // store: 0,1->db 2->file 3->both
     $logObj->store = !empty($tolog['store_db']) ? $tolog['store_db'] : 0;
@@ -124,7 +126,7 @@ if (!headers_sent() && isset($xoopsConfig['redirect_message_ajax']) && $xoopsCon
 }
 */
 if ($modules_list = \XoopsCache::read('system_modules_active')) {
-    $key = array_search(USERLOG_DIRNAME, $modules_list);
+    $key = array_search(USERLOG_DIRNAME, $modules_list, true);
     // if userlog is not in the top
     if (0 != $key) {
         unset($modules_list[$key]);

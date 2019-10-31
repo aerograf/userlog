@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog;
+<?php
+
+namespace XoopsModules\Userlog;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -9,6 +11,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -20,10 +23,11 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
+use Xmf\Request;
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
-require_once __DIR__ . '/../include/common.php';
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
+require_once dirname(__DIR__) . '/include/common.php';
 
 Userlog\Helper::getInstance()->loadLanguage('admin');
 //xoops_loadLanguage('admin', USERLOG_DIRNAME);
@@ -46,6 +50,7 @@ class Setting extends \XoopsObject
      */
     public function __construct()
     {
+        /** @var Userlog\Helper $this ->helper */
         $this->helper = Userlog\Helper::getInstance();
         $this->initVar('set_id', XOBJ_DTYPE_INT, null, false);
         $this->initVar('name', XOBJ_DTYPE_TXTBOX, null, false, 100);
@@ -145,7 +150,7 @@ class Setting extends \XoopsObject
             return false;
         }
         // database get All is better for performance???
-        $logsetsObj = $this->helper->getHandler('setting')->getAll();
+        $logsetsObj = $this->helper->getHandler('Setting')->getAll();
         if (empty($logsetsObj)) {
             return false;
         } // if not set in db return false
@@ -188,7 +193,7 @@ class Setting extends \XoopsObject
      */
     public function setDb($force = true)
     {
-        $ret = $this->helper->getHandler('setting')->insert($this, $force);
+        $ret = $this->helper->getHandler('Setting')->insert($this, $force);
         $this->unsetNew();
 
         return $ret;
@@ -205,7 +210,7 @@ class Setting extends \XoopsObject
      *
      * @return bool
      */
-    public function setFile($logby = 'uid', $unique_id, $options)
+    public function setFile($logby, $unique_id, $options)
     {
         return $this->_createCacheFile($options, "setting_{$logby}_{$unique_id}");
     }
@@ -216,7 +221,7 @@ class Setting extends \XoopsObject
      *
      * @return bool|mixed
      */
-    public function getFile($logby = 'uid', $unique_id)
+    public function getFile($logby, $unique_id)
     {
         return $this->_loadCacheFile("setting_{$logby}_{$unique_id}");
     }
@@ -227,7 +232,7 @@ class Setting extends \XoopsObject
      *
      * @return bool
      */
-    public function deleteFile($logby = 'uid', $unique_id)
+    public function deleteFile($logby, $unique_id)
     {
         return $this->_deleteCacheFile("setting_{$logby}_{$unique_id}");
     }
@@ -288,7 +293,7 @@ class Setting extends \XoopsObject
      */
     public function getOptions($option = null, $V = 'value')
     {
-        $V = strtolower($V);
+        $V = mb_strtolower($V);
 
         if ($this->helper->getUser()) {
             $uid        = $this->helper->getUser()->getVar('uid');
@@ -308,181 +313,181 @@ class Setting extends \XoopsObject
             'log_id'         => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_LOG_ID,
-                'value' => null // null for now
+                'value' => null, // null for now
             ],
             'log_time'       => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_LOG_TIME,
-                'value' => time()
+                'value' => time(),
             ],
             'uid'            => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_UID,
-                'value' => $uid
+                'value' => $uid,
             ],
             'uname'          => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_UNAME,
-                'value' => $uname
+                'value' => $uname,
             ],
             'admin'          => [
                 'type'  => 'bool',
                 'title' => _AM_USERLOG_ADMIN,
-                'value' => $admin
+                'value' => $admin,
             ],
             'groups'         => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_GROUPS,
-                'value' => $groups
+                'value' => $groups,
             ],
             'last_login'     => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_LAST_LOGIN,
-                'value' => $last_login
+                'value' => $last_login,
             ],
             'user_ip'        => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_USER_IP,
-                'value' => $_SERVER['REMOTE_ADDR']
+                'value' => $_SERVER['REMOTE_ADDR'],
             ],
             'user_agent'     => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_USER_AGENT,
-                'value' => $_SERVER['HTTP_USER_AGENT']
+                'value' => $_SERVER['HTTP_USER_AGENT'],
             ],
             'url'            => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_URL,
-                'value' => $_SERVER['REQUEST_URI']
+                'value' => $_SERVER['REQUEST_URI'],
             ],
             'script'         => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_SCRIPT,
-                'value' => end($tempUserLog)
+                'value' => end($tempUserLog),
             ],
             'referer'        => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_REFERER,
-                'value' => !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''
+                'value' => !empty(Request::getString('HTTP_REFERER', '', 'SERVER')) ? Request::getString('HTTP_REFERER', '', 'SERVER') : '',
             ],
             'pagetitle'      => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_PAGETITLE,
-                'value' => isset($GLOBALS['xoopsTpl']) ? $GLOBALS['xoopsTpl']->get_template_vars('xoops_pagetitle') : ''
+                'value' => isset($GLOBALS['xoopsTpl']) ? $GLOBALS['xoopsTpl']->get_template_vars('xoops_pagetitle') : '',
             ],
             'pageadmin'      => [
                 'type'  => 'bool',
                 'title' => _AM_USERLOG_PAGEADMIN,
                 'value' => (isset($GLOBALS['xoopsOption']['pagetype'])
-                            && 'admin' === $GLOBALS['xoopsOption']['pagetype']) ? 1 : 0
+                            && 'admin' === $GLOBALS['xoopsOption']['pagetype']) ? 1 : 0,
             ],
             'module'         => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_MODULE,
-                'value' => $this->helper->getLogModule()->getVar('dirname')
+                'value' => $this->helper->getLogModule()->getVar('dirname'),
             ],
             'module_name'    => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_MODULE_NAME,
-                'value' => $this->helper->getLogModule()->getVar('name')
+                'value' => $this->helper->getLogModule()->getVar('name'),
             ],
             'item_name'      => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_ITEM_NAME,
-                'value' => null
+                'value' => null,
             ],
             'item_id'        => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_ITEM_ID,
-                'value' => null
+                'value' => null,
             ],
             // user data input method
             'request_method' => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_REQUEST_METHOD,
-                'value' => $_SERVER['REQUEST_METHOD']
+                'value' => $_SERVER['REQUEST_METHOD'],
             ],
             'zget'           => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_GET,
-                'value' => $_GET
+                'value' => $_GET,
             ],
             'post'           => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_POST,
-                'value' => $_POST
+                'value' => $_POST,
             ],
             'request'        => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_REQUEST,
-                'value' => $_REQUEST
+                'value' => $_REQUEST,
             ],
             'files'          => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_FILES,
-                'value' => $_FILES
+                'value' => $_FILES,
             ],
             'env'            => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_ENV,
-                'value' => $_ENV
+                'value' => $_ENV,
             ],
             'session'        => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_SESSION,
-                'value' => $_SESSION
+                'value' => $_SESSION,
             ],
             'cookie'         => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_COOKIE,
-                'value' => $_COOKIE
+                'value' => $_COOKIE,
             ],
             'header'         => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_HEADER,
-                'value' => headers_list()
+                'value' => headers_list(),
             ],
             'logger'         => [
                 'type'  => 'text',
                 'title' => _AM_USERLOG_LOGGER,
-                'value' => $GLOBALS['xoopsLogger']->errors
+                'value' => $GLOBALS['xoopsLogger']->errors,
             ],
             // settings will not be logged
             'active'         => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_SET_ACTIVE,
-                'value' => 1
+                'value' => 1,
             ],
             'inside'         => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_INSIDE,
-                'value' => 1
+                'value' => 1,
             ],
             'outside'        => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_OUTSIDE,
-                'value' => 1
+                'value' => 1,
             ],
             'unset_pass'     => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_UNSET_PASS,
-                'value' => 1
+                'value' => 1,
             ],
             'store_file'     => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_STORE_FILE,
-                'value' => 1
+                'value' => 1,
             ],
             'store_db'       => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_STORE_DB,
-                'value' => 1
+                'value' => 1,
             ],
             'views'          => [
                 'type'  => 'int',
                 'title' => _AM_USERLOG_VIEWS,
-                'value' => 1 // for item_name and item_id
-            ]
+                'value' => 1, // for item_name and item_id
+            ],
         ];
         $ret         = $this->helper->getFromKeys($options, $option);
         // patch Login/Register History
@@ -510,8 +515,8 @@ class Setting extends \XoopsObject
                     'unset_pass',
                     'store_file',
                     'store_db',
-                    'views'
-                ])) {
+                    'views',
+                ], true)) {
                 continue;
             }
             // check values
@@ -539,7 +544,7 @@ class Setting extends \XoopsObject
             switch ($ele) {
                 case 'pageadmin':
                 case 'admin':
-                    $defEl    = '_AM_USERLOG_' . strtoupper($ele); // if constant is defined in translation - it is good for now
+                    $defEl    = '_AM_USERLOG_' . mb_strtoupper($ele); // if constant is defined in translation - it is good for now
                     $el[$ele] = new \XoopsFormRadio(constant($defEl), "options[{$ele}]", isset($options[$ele]) ? $options[$ele] : '');
                     $el[$ele]->addOption(1, _YES);
                     $el[$ele]->addOption(0, _NO);
@@ -549,10 +554,10 @@ class Setting extends \XoopsObject
                     break;
                 default:
                     foreach ($query_types as $type) {
-                        $defEl = '_AM_USERLOG_' . strtoupper($ele . $type); // if constant is defined in translation - it is good for now
+                        $defEl = '_AM_USERLOG_' . mb_strtoupper($ele . $type); // if constant is defined in translation - it is good for now
                         if (defined($defEl . '_FORM')) {
                             $el[$ele . $type] = new \XoopsFormText(constant($defEl), "options[{$ele}{$type}]", 10, 255, !empty($options[$ele . $type]) ? $options[$ele . $type] : null);
-                            $defEle           = '_AM_USERLOG_' . strtoupper($ele);
+                            $defEle           = '_AM_USERLOG_' . mb_strtoupper($ele);
                             $el[$ele . $type]->setDescription(sprintf(constant($defEl . '_FORM'), constant($defEle), constant($defEle)));
                             $form->addElement($el[$ele . $type]);
                         }

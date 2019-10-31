@@ -18,8 +18,7 @@
  * @author          irmtfan (irmtfan@yahoo.com)
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
-
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 
 /**
  * Class UserlogCorePreload
@@ -27,12 +26,13 @@ defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
 class UserlogCorePreload extends \XoopsPreloadItem
 {
     // to log main part of modules
+
     /**
      * @param $args
      */
     public static function eventCoreFooterStart($args)
     {
-        include __DIR__ . '/../include/log.php';
+        require_once dirname(__DIR__) . '/include/log.php';
     }
 
     // to log redirects because usually prorammers use exit() after redirect_header function.
@@ -42,7 +42,7 @@ class UserlogCorePreload extends \XoopsPreloadItem
      */
     public static function eventCoreIncludeFunctionsRedirectheader($args)
     {
-        include __DIR__ . '/../include/log.php';
+        require_once dirname(__DIR__) . '/include/log.php';
     }
 
     /**
@@ -51,10 +51,11 @@ class UserlogCorePreload extends \XoopsPreloadItem
     public static function eventCoreIncludeCommonEnd($args)
     {
         // to add PSR-4 autoloader
-        include __DIR__ . '/autoloader.php';
+        require_once __DIR__ . '/autoloader.php';
 
-        include __DIR__ . '/../include/postlog.php';
+        require_once dirname(__DIR__) . '/include/postlog.php';
     }
+
     // in XOOPS255/index.php (homepage) when no module is set for start page there is a bug in XOOPS255/header.php exit() should be commented
     /*$xoopsPreload->triggerEvent('core.header.checkcache');
     if ($xoTheme->checkCache()) {
@@ -63,11 +64,12 @@ class UserlogCorePreload extends \XoopsPreloadItem
     } */
 
     // to log admin part of modules (must use moduleadmin class)
+
     /**
      * @param $args
      */
     public static function eventSystemClassGuiHeader($args)
     {
-        include __DIR__ . '/../include/log.php';
+        require_once dirname(__DIR__) . '/include/log.php';
     }
 }

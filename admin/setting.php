@@ -27,6 +27,7 @@ require_once __DIR__ . '/admin_header.php';
 require_once XOOPS_ROOT_PATH . '/class/pagenav.php';
 
 xoops_cp_header();
+/** @var Userlog\Helper $helper */
 $helper = Userlog\Helper::getInstance();
 $op     = Request::getString('op');
 // Where do we start ?
@@ -59,7 +60,7 @@ switch ($op) {
             if ($logsetObj->deleteFile($logsetObj->logby(), $logsetObj->getVar('unique_id'))) { //use getVar to get IP long
                 $msgDel = _AM_USERLOG_SET_CLEANCACHE_SUCCESS;
             }
-            if (!$helper->getHandler('setting')->delete($logsetObj)) {
+            if (!$helper->getHandler('Setting')->delete($logsetObj)) {
                 redirect_header('setting.php', 1, sprintf(_AM_USERLOG_SET_DELETE_ERROR, $logsetObj->name()));
             }
             $msgDel .= '<br>' . sprintf(_AM_USERLOG_SET_DELETE_SUCCESS, $logsetObj->name());
@@ -69,7 +70,6 @@ switch ($op) {
             xoops_cp_footer();
         }
         break;
-
     case 'addsetting':
         $message = _AM_USERLOG_SET_EDIT;
         // check to insure only one (logby and unique_id) added to database
@@ -77,12 +77,12 @@ switch ($op) {
             $criteria = new \CriteriaCompo();
             $criteria->add(new \Criteria('logby', $logby));
             $criteria->add(new \Criteria('unique_id', $unique_id));
-            $logsetObj = $helper->getHandler('setting')->getObjects($criteria);
+            $logsetObj = $helper->getHandler('Setting')->getObjects($criteria);
             if ($logsetObj) {
                 $logsetObj = $logsetObj[0];
                 $message   = _AM_USERLOG_SET_UPDATE;
             } elseif ('' !== $logby) {
-                $logsetObj = $helper->getHandler('setting')->create();
+                $logsetObj = $helper->getHandler('Setting')->create();
                 $message   = _AM_USERLOG_SET_CREATE;
             } else {
                 redirect_header('setting.php', 1, _AM_USERLOG_SET_ERROR);
@@ -102,14 +102,14 @@ switch ($op) {
                                       'module',
                                       'module_name',
                                       'item_name',
-                                      'item_id'
+                                      'item_id',
                                   ], $option);
         }
         // always log id and time
         if (!empty($option[0])) {
             $option = array_merge(['log_id', 'log_time'], $option);
         }
-        $options_arr = $logsetObj->getOptions($option, 'key');// empty means all. sanitize options
+        $options_arr = $logsetObj->getOptions($option, 'key'); // empty means all. sanitize options
         $logsetObj->setVar('options', implode(',', $options_arr));
         $logsetObj->setVar('scope', implode(',', $scope));
         if ($logsetObj->storeSet(true)) {
@@ -137,8 +137,8 @@ switch ($op) {
         // unset userlog
         //unset($dirNames[USERLOG_DIRNAME]);
         // get all settings as array
-        $sets      = $helper->getHandler('setting')->getSets($helper->getConfig('sets_perpage'), $startentry, null, 'set_id', 'DESC', null, false);
-        $totalSets = $helper->getHandler('setting')->getCount();
+        $sets      = $helper->getHandler('Setting')->getSets($helper->getConfig('sets_perpage'), $startentry, null, 'set_id', 'DESC', null, false);
+        $totalSets = $helper->getHandler('Setting')->getCount();
         $pagenav   = new \XoopsPageNav($totalSets, $helper->getConfig('sets_perpage'), $startentry, 'startentry');
         // check set arrays
         foreach ($sets as $id => $set) {

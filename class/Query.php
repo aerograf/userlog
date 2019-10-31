@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog;
+<?php
+
+namespace XoopsModules\Userlog;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -9,6 +11,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -24,8 +27,8 @@ use XoopsModules\Userlog;
 
 // Important note: use $eleNamePrefix = "options" because it is hard-coded in XOOPS CORE > BLOCKS
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
-require_once __DIR__ . '/../include/common.php';
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
+require_once dirname(__DIR__) . '/include/common.php';
 
 xoops_loadLanguage('admin', USERLOG_DIRNAME);
 xoops_load('XoopsFormLoader');
@@ -39,16 +42,14 @@ class Query
 {
     public $helper = null;
 
-    /**
-     *
-     */
     protected function __construct()
     {
+        /** @var Userlog\Helper $this ->helper */
         $this->helper = Userlog\Helper::getInstance();
     }
 
     /**
-     * @return UserlogQuery
+     * @return Userlog\Query
      */
     public static function getInstance()
     {
@@ -59,12 +60,14 @@ class Query
 
         return $instance;
     }
+
     // args[0] - number of items to show in block. the default is 10
     // args[1] - login or register or both radio select
     // args[2] - failed or successful or both radio select
     // args[3] - inactive or active or both
     // args[4] - never login before or login before or both
     // args[5] - Order - DESC, ASC default: DESC
+
     /**
      * @param $args
      *
@@ -96,7 +99,7 @@ class Query
         if (!empty($args[$i])) {
             $criteria->add(new \Criteria('post', '%last_visit%', $opt[$args[$i]]), 'AND'); // never login before "NOT LIKE" login before "LIKE"
         }
-        $loginsObj = $this->helper->getHandler('log')->getLogs($args[0], 0, $criteria, 'log_id', $args[5], ['log_id', 'log_time', 'post'], true); // true => as Obj
+        $loginsObj = $this->helper->getHandler('Log')->getLogs($args[0], 0, $criteria, 'log_id', $args[5], ['log_id', 'log_time', 'post'], true); // true => as Obj
         $block     = [];
         if (empty($loginsObj)) {
             return $block;
@@ -128,7 +131,7 @@ class Query
                 $block[$log_id]['msg']     .= ('register' === $block[$log_id]['loginOrRegister']) ? _ERRORS : _US_INCORRECTLOGIN;
                 $block[$log_id]['color']   = 'RED';
             }
-            $this->helper->setConfig('format_date', $this->helper->getConfig('format_date_history'));
+            $GLOBALS['XoopsModuleConfig']->setConfig('format_date', $this->helper->getConfig('format_date_history'));
             $block[$log_id]['log_time'] = $loginObj->getLogTime();
         }
         unset($block[$log_id]['pass'], $block[$log_id]['vpass']);
@@ -199,6 +202,7 @@ class Query
     // args[1] - stats_type - referral (default), browser, OS
     // args[2] - Sort - stats_link, stats_value (default), time_update
     // args[3] - Order - DESC, ASC default: DESC
+
     /**
      * @param $args
      *
@@ -237,7 +241,7 @@ class Query
         $typeEle->addOptionArray([
                                      'referral' => _AM_USERLOG_STATS_REFERRAL,
                                      'browser'  => _AM_USERLOG_STATS_BROWSER,
-                                     'OS'       => _AM_USERLOG_STATS_OS
+                                     'OS'       => _AM_USERLOG_STATS_OS,
                                  ]);
         $typeEle->setDescription(_AM_USERLOG_STATS_TYPE_DSC);
 
@@ -246,7 +250,7 @@ class Query
         $sortEle->addOptionArray([
                                      'stats_link'  => _AM_USERLOG_ITEM_NAME,
                                      'stats_value' => _AM_USERLOG_VIEW,
-                                     'time_update' => _AM_USERLOG_STATS_TIME_UPDATE
+                                     'time_update' => _AM_USERLOG_STATS_TIME_UPDATE,
                                  ]);
         $sortEle->setDescription(_AM_USERLOG_SORT_DSC);
 
@@ -267,6 +271,7 @@ class Query
 
     // args[0] - number of items to show in block. the default is 10
     // args[1] - module dirname - 0 or empty = all modules
+
     /**
      * @param $args
      *
@@ -282,9 +287,9 @@ class Query
         if (!empty($args[1])) {
             $refLike .= "module={$args[1]}";
         }
-        $criteria->add(new \Criteria('referer', "{$refLike}", 'LIKE'), 'AND'); // modules admin
+        $criteria->add(new \Criteria('referer', $refLike, 'LIKE'), 'AND'); // modules admin
 
-        $modulesadminObjs = $this->helper->getHandler('log')->getLogs($args[0], 0, $criteria, 'log_id', 'DESC', ['log_id', 'log_time', 'referer'], true); // true => as Obj
+        $modulesadminObjs = $this->helper->getHandler('Log')->getLogs($args[0], 0, $criteria, 'log_id', 'DESC', ['log_id', 'log_time', 'referer'], true); // true => as Obj
         if (empty($modulesadminObjs)) {
             return false;
         }
@@ -292,7 +297,7 @@ class Query
         foreach ($modulesadminObjs as $maObj) {
             $query = parse_url($maObj->referer(), PHP_URL_QUERY);
             parse_str($query, $moduleAdmin);
-            $moduleAdmin['op_lang']          = constant('_AM_SYSTEM_MODULES_' . strtoupper($moduleAdmin['op']));
+            $moduleAdmin['op_lang']          = constant('_AM_SYSTEM_MODULES_' . mb_strtoupper($moduleAdmin['op']));
             $moduleAdmin['log_time']         = $maObj->getLogTime();
             $block[$maObj->getVar('log_id')] = $moduleAdmin;
         }

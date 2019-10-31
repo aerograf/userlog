@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog\Plugin;
+<?php
+
+namespace XoopsModules\Userlog\Plugin;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -15,6 +17,9 @@
  * @license         http://www.fsf.org/copyleft/gpl.html GNU public license
  * @author          trabis <lusopoemas@gmail.com>
  */
+
+use XoopsModules\Userlog;
+
 // irmtfan copy from xoops26 xoops_lib/Xoops/Module/plugin.php class
 // change XoopsLoad -> self
 // change $xoops -> $GLOBALS['xoops']
@@ -28,7 +33,7 @@ class Plugin
      * @param string $pluginName
      * @param bool   $force
      *
-     * @return bool|\Xoops_Module_Plugin_Abstract false if plugin does not exist
+     * @return bool|Userlog\Plugin\PluginAbstract false if plugin does not exist
      */
     public static function getPlugin($dirname, $pluginName = 'system', $force = false)
     {
@@ -72,7 +77,7 @@ class Plugin
                     $className = ucfirst($dirname) . ucfirst($pluginName) . 'Plugin';
                     $interface = ucfirst($pluginName) . 'PluginInterface';
                     $class     = new $className($dirname);
-                    if ($class instanceof Userlog\PluginAbstract && $class instanceof $interface) {
+                    if ($class instanceof Userlog\Plugin\PluginAbstract && $class instanceof $interface) {
                         $plugins[$pluginName][$dirname] = $class;
                     }
                 }
@@ -88,7 +93,6 @@ class Plugin
      *
      * @return bool
      */
-
     public static function loadFile($file, $once = true)
     {
         self::_securityCheck($file);
@@ -96,7 +100,7 @@ class Plugin
             if ($once) {
                 require_once $file;
             } else {
-                include $file;
+                require_once $file;
             }
 
             return true;
@@ -110,7 +114,6 @@ class Plugin
      *
      * @return mixed
      */
-
     public static function fileExists($file)
     {
         static $included = [];

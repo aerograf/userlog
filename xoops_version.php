@@ -22,7 +22,7 @@
 
 use Xmf\Request;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
 
 require_once __DIR__ . '/preloads/autoloader.php';
 
@@ -45,17 +45,17 @@ $modversion = [
     'license'             => 'GPL 2.0 or later',
     'license_url'         => 'www.gnu.org/licenses/gpl-2.0.html/',
     'help'                => 'page=help',
-    //
-    'release_info'        => 'Changelog',
-    'release_file'        => XOOPS_URL . "/modules/{$moduleDirName}/docs/changelog file",
-    //
+
+    'release_info' => 'Changelog',
+    'release_file' => XOOPS_URL . "/modules/{$moduleDirName}/docs/changelog file",
+
     'manual'              => 'link to manual file',
     'manual_file'         => XOOPS_URL . "/modules/{$moduleDirName}/docs/install.txt",
     // images
     'image'               => 'assets/images/logoModule.png',
     'iconsmall'           => 'assets/images/iconsmall.png',
     'iconbig'             => 'assets/images/iconbig.png',
-    'dirname'             => "{$moduleDirName}",
+    'dirname'             => $moduleDirName,
     // Local path icons
     'modicons16'          => 'assets/images/icons/16',
     'modicons32'          => 'assets/images/icons/32',
@@ -69,7 +69,7 @@ $modversion = [
     'module_website_name' => 'XOOPS Project',
     // ------------------- Min Requirements -------------------
     'min_php'             => '5.5',
-    'min_xoops'           => '2.5.9',
+    'min_xoops'           => '2.5.10',
     'min_admin'           => '1.2',
     'min_db'              => ['mysql' => '5.5'],
     // ------------------- Admin Menu -------------------
@@ -100,7 +100,7 @@ $modversion = [
     'tables'              => [
         $moduleDirName . '_log',
         $moduleDirName . '_set',
-        $moduleDirName . '_stats'
+        $moduleDirName . '_stats',
     ],
 ];
 
@@ -114,49 +114,34 @@ $modversion['helpsection'] = [
 
 // ------------------- Templates ------------------- //
 
-xoops_loadLanguage('admin', $modversion['dirname']);
+xoops_loadLanguage('admin', $moduleDirName);
 
 // Templates - if you don't define 'type' it will be 'module' | '' -> templates
-$modversion['templates'] [] = [
+$modversion['templates'] = [
     [
-        'file'        => $modversion['dirname'] . '_admin_sets.tpl',
+        'file'        => $moduleDirName . '_admin_sets.tpl',
         'type'        => 'admin', // $type = 'blocks' -> templates/blocks , 'admin' -> templates/admin , 'module' | '' -> templates
-        'description' => 'list of userlog setting'
+        'description' => 'list of userlog setting',
     ],
-];
-
-$modversion['templates'] [] = [
     [
-        'file'        => $modversion['dirname'] . '_admin_logs.tpl',
+        'file'        => $moduleDirName . '_admin_logs.tpl',
         'type'        => 'admin', // $type = 'blocks' -> templates/blocks , 'admin' -> templates/admin , 'module' | '' -> templates
-        'description' => 'list of userlog logs'
+        'description' => 'list of userlog logs',
     ],
-
-];
-
-$modversion['templates'] [] = [
     [
-        'file'        => $modversion['dirname'] . '_admin_file.tpl',
+        'file'        => $moduleDirName . '_admin_file.tpl',
         'type'        => 'admin', // $type = 'blocks' -> templates/blocks , 'admin' -> templates/admin , 'module' | '' -> templates
-        'description' => 'File manager'
+        'description' => 'File manager',
     ],
-
-];
-
-$modversion['templates'] [] = [
     [
-        'file'        => $modversion['dirname'] . '_admin_stats.tpl',
+        'file'        => $moduleDirName . '_admin_stats.tpl',
         'type'        => 'admin', // $type = 'blocks' -> templates/blocks , 'admin' -> templates/admin , 'module' | '' -> templates
-        'description' => 'Logs Statistics'
+        'description' => 'Logs Statistics',
     ],
-
-];
-
-$modversion['templates'] [] = [
     [
-        'file'        => $modversion['dirname'] . '_admin_stats_moduleadmin.tpl',
+        'file'        => $moduleDirName . '_admin_stats_moduleadmin.tpl',
         'type'        => 'admin', // $type = 'blocks' -> templates/blocks , 'admin' -> templates/admin , 'module' | '' -> templates
-        'description' => 'module admin history'
+        'description' => 'module admin history',
     ],
 ];
 // ------------------- blocks ------------------- //
@@ -173,10 +158,10 @@ $modversion['blocks'][] = [
     'file'        => 'views.php',
     'name'        => _MI_USERLOG_BLOCK_VIEWS,
     'description' => _MI_USERLOG_BLOCK_VIEWS_DSC,
-    'show_func'   => $modversion['dirname'] . '_views_show',
-    'edit_func'   => $modversion['dirname'] . '_views_edit',
+    'show_func'   => $moduleDirName . '_views_show',
+    'edit_func'   => $moduleDirName . '_views_edit',
     'options'     => '10|0|1|-1|0|count|DESC',
-    'template'    => $modversion['dirname'] . '_block_views.tpl',
+    'template'    => $moduleDirName . '_block_views.tpl',
 ];
 
 // options[0] - number of items to show in block. the default is 10
@@ -190,10 +175,10 @@ $modversion['blocks'][] = [
     'file'        => 'login_reg_history.php',
     'name'        => _AM_USERLOG_LOGIN_REG_HISTORY,
     'description' => _AM_USERLOG_LOGIN_REG_HISTORY,
-    'show_func'   => $modversion['dirname'] . '_login_reg_history_show',
-    'edit_func'   => $modversion['dirname'] . '_login_reg_history_edit',
+    'show_func'   => $moduleDirName . '_login_reg_history_show',
+    'edit_func'   => $moduleDirName . '_login_reg_history_edit',
     'options'     => '10|0|0|0|0|DESC',
-    'template'    => $modversion['dirname'] . '_block_login_reg_history.tpl',
+    'template'    => $moduleDirName . '_block_login_reg_history.tpl',
 ];
 
 // options[0] - number of items to show in block. the default is 10
@@ -205,10 +190,10 @@ $modversion['blocks'][] = [
     'file'        => 'stats_type.php',
     'name'        => _AM_USERLOG_STATS_TYPE,
     'description' => _AM_USERLOG_STATS_TYPE_DSC,
-    'show_func'   => $modversion['dirname'] . '_stats_type_show',
-    'edit_func'   => $modversion['dirname'] . '_stats_type_edit',
+    'show_func'   => $moduleDirName . '_stats_type_show',
+    'edit_func'   => $moduleDirName . '_stats_type_edit',
     'options'     => '10|referral|stats_value|DESC',
-    'template'    => $modversion['dirname'] . '_block_stats_type.tpl',
+    'template'    => $moduleDirName . '_block_stats_type.tpl',
 ];
 
 // Config categories
@@ -227,7 +212,7 @@ $modversion['configcat']['prob']['description']    = _MI_USERLOG_CONFCAT_PROB_DS
 ################### Log file ####################
 $modversion['log_paths'] = [
     'XOOPS_VAR_PATH'    => XOOPS_VAR_PATH,
-    'XOOPS_UPLOAD_PATH' => XOOPS_UPLOAD_PATH
+    'XOOPS_UPLOAD_PATH' => XOOPS_UPLOAD_PATH,
 ];
 
 $modversion['config'][] = [
@@ -239,7 +224,7 @@ $modversion['config'][] = [
     'default'     => 1,
     'options'     => [
         _MI_USERLOG_ACTIVE => 1,
-        _MI_USERLOG_IDLE   => 0
+        _MI_USERLOG_IDLE   => 0,
     ],
 ];
 
@@ -322,7 +307,6 @@ $modversion['config'][] = [
     'valuetype'   => 'text',
     'default'     => 'elapse',
     'category'    => 'format',
-
 ];
 
 $modversion['config'][] = [
@@ -364,7 +348,7 @@ $modversion['config'][] = [
     'default'     => 'db',
     'options'     => [
         _AM_USERLOG_ENGINE_DB   => 'db',
-        _AM_USERLOG_ENGINE_FILE => 'file'
+        _AM_USERLOG_ENGINE_FILE => 'file',
     ],
     'category'    => 'pagenav',
 ];
@@ -378,7 +362,7 @@ $modversion['config'][] = [
     'default'     => '0',
     'options'     => [
         _AM_USERLOG_FILE_WORKING  => '0',
-        _AM_USERLOG_STATS_FILEALL => 'all'
+        _AM_USERLOG_STATS_FILEALL => 'all',
     ],
     'category'    => 'pagenav',
 ];
@@ -391,7 +375,6 @@ $modversion['config'][] = [
     'valuetype'   => 'textbox',
     'default'     => 'even',
     'category'    => 'logdb',
-
 ];
 
 $modversion['config'][] = [
@@ -465,11 +448,11 @@ if (isset($xoopsOption['pagetype']) && 'admin' === $xoopsOption['pagetype'] && i
     $dirname = $xoopsModule->getVar('dirname');
     // START if dirname is system
     if ('system' === $dirname && Request::hasVar('fct')) {
-        $hModule = xoops_getHandler('module');
+        $moduleHandler = xoops_getHandler('module');
         // if we are in preferences of modules
         if ('preferences' === Request::getString('fct') && Request::hasVar('mod')) {
             $mod     = Request::getInt('mod');
-            $module  = $hModule->get($mod);
+            $module  = $moduleHandler->get($mod);
             $dirname = $module->getVar('dirname');
         }
         // if we are in modules admin - can be done with onuninstall and onupdate???
@@ -491,7 +474,7 @@ if (isset($xoopsOption['pagetype']) && 'admin' === $xoopsOption['pagetype'] && i
     // now check permission from file
     if ($dirname == $modversion['dirname']) {
         if (file_exists($permFile = XOOPS_ROOT_PATH . '/modules/' . $modversion['dirname'] . '/admin/addon/perm.php')) {
-            $perm = include $permFile;
+            $perm = require_once $permFile;
             if (count($perm['super']['uid']) > 0 || count($perm['super']['group']) > 0) {
                 global $xoopsUser;
                 if (is_object($xoopsUser) && !in_array($xoopsUser->getVar('uid'), $perm['super']['uid'])

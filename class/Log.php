@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog;
+<?php
+
+namespace XoopsModules\Userlog;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -24,8 +26,8 @@
 use Xmf\Request;
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
-require_once __DIR__ . '/../include/common.php';
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
+require_once dirname(__DIR__) . '/include/common.php';
 
 /**
  * Class Log
@@ -48,14 +50,15 @@ class Log extends \XoopsObject
         'session',
         'cookie',
         'header',
-        'logger'
-    ];// json_encoded fields
+        'logger',
+    ]; // json_encoded fields
 
     /**
      * constructor
      */
     public function __construct()
     {
+        /** @var Userlog\Helper $this ->helper */
         $this->helper = Userlog\Helper::getInstance();
         $this->initVar('log_id', XOBJ_DTYPE_INT, null, false);
         $this->initVar('log_time', XOBJ_DTYPE_INT, null, true);
@@ -231,14 +234,14 @@ class Log extends \XoopsObject
             'module_name',
             'script',
             'item_name',
-            'item_id'
+            'item_id',
         ];
         $criteria->setGroupBy('pageadmin, module, script, item_name, item_id');
 
-        list($loglogsObj, $itemViews) = $this->helper->getHandler('log')->getLogsCounts($criteria, $fields);
+        list($loglogsObj, $itemViews) = $this->helper->getHandler('Log')->getLogsCounts($criteria, $fields);
         $criteria->setGroupBy('module');
         $criteria->setSort(('module_count' === $sort) ? 'count' : 'module');
-        $moduleViews = $this->helper->getHandler('log')->getCounts($criteria);
+        $moduleViews = $this->helper->getHandler('Log')->getCounts($criteria);
         unset($criteria);
         // initializing
         $items = []; // very important!!!
@@ -262,7 +265,7 @@ class Log extends \XoopsObject
         }
         foreach ($items as $link => $item) {
             $col1[$link] = $item[$sort];
-            $col2[$link] = $item['count'];//second sort by
+            $col2[$link] = $item['count']; //second sort by
         }
         if (!empty($items)) {
             array_multisort($col1, ('ASC' === $order) ? SORT_ASC : SORT_DESC, $col2, SORT_DESC, $items);
@@ -302,13 +305,13 @@ class Log extends \XoopsObject
         foreach ($tolog as $option => $logvalue) {
             if (!empty($logvalue)) {
                 // value array to string. use json_encode
-                if (is_array($logvalue) && count($logvalue) > 0) {
+                if ($logvalue && is_array($logvalue)) {
                     $logvalue = json_encode($logvalue, (PHP_VERSION > '5.4.0') ? JSON_UNESCAPED_UNICODE : 0);
                 }
                 switch ($option) {
                     // update referral in stats table
                     case 'referer':
-                        if (false === strpos($logvalue, XOOPS_URL)) {
+                        if (false === mb_strpos($logvalue, XOOPS_URL)) {
                             $statsObj = Userlog\Stats::getInstance();
                             $statsObj->update('referral', 0, 1, true, parse_url($logvalue, PHP_URL_HOST)); // auto increment 1
                         }
@@ -324,7 +327,7 @@ class Log extends \XoopsObject
                 $this->setVar($option, $logvalue);
             }
         }
-        $ret = $this->helper->getHandler('log')->insert($this, $force);
+        $ret = $this->helper->getHandler('Log')->insert($this, $force);
         $this->unsetNew();
 
         return $ret;
@@ -343,7 +346,7 @@ class Log extends \XoopsObject
             $logs[$log_id]['last_login'] = $this->helper->formatTime($logs[$log_id]['last_login']);
             if (!empty($logs[$log_id]['groups'])) {
                 // change g1g2 to Webmasters, Registered Users
-                $groups                  = explode('g', substr($logs[$log_id]['groups'], 1)); // remove the first "g" from string
+                $groups                  = explode('g', mb_substr($logs[$log_id]['groups'], 1)); // remove the first "g" from string
                 $userGroupNames          = $this->helper->getFromKeys($this->helper->getGroupList(), $groups);
                 $logs[$log_id]['groups'] = implode(',', $userGroupNames);
             }
@@ -361,7 +364,7 @@ class Log extends \XoopsObject
             $logs[$log_id]['request_method'] = empty($logs[$log_id]['request_method']) ? '' : $logs[$log_id]['request_method'] . "\n";
             foreach ($this->sourceJSON as $option) {
                 if (!empty($logs[$log_id][$option])) {
-                    $logs[$log_id]['request_method'] .= '$_' . strtoupper($option) . ' ' . $logs[$log_id][$option] . "\n";
+                    $logs[$log_id]['request_method'] .= '$_' . mb_strtoupper($option) . ' ' . $logs[$log_id][$option] . "\n";
                 }
                 if ('env' === $option) {
                     break;
@@ -440,7 +443,7 @@ class Log extends \XoopsObject
      *
      * @return bool|string
      */
-    public function exportFilesToCsv($log_files = [], $headers, $csvNamePrefix = 'list_', $delimiter = ';')
+    public function exportFilesToCsv($log_files, $headers, $csvNamePrefix = 'list_', $delimiter = ';')
     {
         $log_files = $this->parseFiles($log_files);
         if (0 == ($totalFiles = count($log_files))) {
@@ -538,13 +541,13 @@ class Log extends \XoopsObject
                 continue;
             }
             // deal with greater than and lower than
-            $tt = substr($key, -2);
+            $tt = mb_substr($key, -2);
             switch ($tt) {
                 case 'GT':
-                    $op = substr($key, 0, -2);
+                    $op = mb_substr($key, 0, -2);
                     break;
                 case 'LT':
-                    $op = substr($key, 0, -2);
+                    $op = mb_substr($key, 0, -2);
                     break;
                 default:
                     $op = $key;
@@ -559,15 +562,15 @@ class Log extends \XoopsObject
                     }
                     foreach ($val_arr as $qry) {
                         // if !QUERY eg: !logs.php,views.php
-                        if (0 === strpos($qry, '!')) {
+                        if (0 === mb_strpos($qry, '!')) {
                             $flagStr = true;
-                            if (false !== strpos($log[$op], substr($qry, 1))) {
+                            if (false !== mb_strpos($log[$op], mb_substr($qry, 1))) {
                                 $flagStr = false; // have that delete
                                 break; // means AND
                             }
                         } else {
                             $flagStr = false;
-                            if (false !== strpos($log[$op], $qry)) {
+                            if (false !== mb_strpos($log[$op], $qry)) {
                                 $flagStr = true; // have that dont delete
                                 break; // means OR
                             }
@@ -933,7 +936,7 @@ class Log extends \XoopsObject
         }
         //this folder must be writeable by the server
         $zipFolder     = $this->helper->getConfig('logfilepath') . '/' . USERLOG_DIRNAME . '/zip';
-        $folderHandler = \XoopsFile::getHandler('folder', $zipFolder, true);// create if not exist
+        $folderHandler = \XoopsFile::getHandler('folder', $zipFolder, true); // create if not exist
         $zipFileName   = basename($zipFileName, '.zip');
         if (empty($zipFileName)) {
             $zipFileName = $this->helper->getConfig('logfilename') . '_zip_' . $totalFiles . '_files_' . date('Y-m-d_H-i-s') . '.zip';
@@ -942,9 +945,9 @@ class Log extends \XoopsObject
         }
         $zipFile = $zipFolder . '/' . $zipFileName;
 
-        $zip = new ZipArchive();
+        $zip = new \ZipArchive();
 
-        if (true !== $zip->open($zipFile, ZipArchive::CREATE)) {
+        if (true !== $zip->open($zipFile, \ZipArchive::CREATE)) {
             $this->setErrors("Cannot open ({$zipFile})");
 
             return false;
@@ -969,7 +972,7 @@ class Log extends \XoopsObject
      * @param bool  $multi
      * @param int   $size
      *
-     * @return XoopsFormSelect
+     * @return \XoopsFormSelect
      */
     public function buildFileSelectEle($currentFile = [], $multi = false, $size = 3)
     {

@@ -26,6 +26,7 @@ use XoopsModules\Userlog;
 require_once __DIR__ . '/admin_header.php';
 require_once XOOPS_ROOT_PATH . '/class/pagenav.php';
 xoops_cp_header();
+/** @var Userlog\Helper $helper */
 $helper    = Userlog\Helper::getInstance();
 $loglogObj = Userlog\Log::getInstance();
 
@@ -94,7 +95,7 @@ switch ($opentry) {
         break;
 }
 $form   = new \XoopsThemeForm(_AM_USERLOG_ADMENU_FILE, 'filemanager', 'file.php', 'post', true);
-$fileEl = $loglogObj->buildFileSelectEle($file, true, 10);// multiselect = true, size=10
+$fileEl = $loglogObj->buildFileSelectEle($file, true, 10); // multiselect = true, size=10
 $form->addElement($fileEl);
 $actionEl = new \XoopsFormSelect(_AM_USERLOG_FILE_ACTION, 'op', $opentry);
 $actions  = [
@@ -103,7 +104,7 @@ $actions  = [
     'rename'     => _AM_USERLOG_FILE_RENAME,
     'copy'       => _AM_USERLOG_FILE_COPY,
     'merge'      => _AM_USERLOG_FILE_MERGE,
-    'export-csv' => _AM_USERLOG_FILE_EXPORT_CSV
+    'export-csv' => _AM_USERLOG_FILE_EXPORT_CSV,
 ];
 $actionEl->addOptionArray($actions);
 $actionEl->setExtra("onchange=\"var el = document.forms.filemanager.filename.parentElement.parentElement; el.className = ''; if (this.value == 'del') { el.className = 'hidden'}\"");

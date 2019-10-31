@@ -22,10 +22,10 @@
 
 use XoopsModules\Userlog;
 
-include __DIR__ . '/../preloads/autoloader.php';
+require_once dirname(__DIR__) . '/preloads/autoloader.php';
 
 $moduleDirName      = basename(dirname(__DIR__));
-$moduleDirNameUpper = strtoupper($moduleDirName); //$capsDirName
+$moduleDirNameUpper = mb_strtoupper($moduleDirName); //$capsDirName
 
 /** @var \XoopsDatabase $db */
 /** @var Userlog\Helper $helper */
@@ -33,7 +33,7 @@ $moduleDirNameUpper = strtoupper($moduleDirName); //$capsDirName
 $db      = \XoopsDatabaseFactory::getDatabaseConnection();
 $helper  = Userlog\Helper::getInstance();
 $utility = new Userlog\Utility();
-//$configurator = new Userlog\common\Configurator();
+//$configurator = new Userlog\Common\Configurator();
 
 $helper->loadLanguage('common');
 

@@ -22,8 +22,8 @@
 
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
-require_once __DIR__ . '/../include/common.php';
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
+require_once dirname(__DIR__) . '/include/common.php';
 
 if (defined('USERLOG_BLOCK_VIEWS_DEFINED')) {
     return;
@@ -61,7 +61,7 @@ function userlog_views_show($options)
             $module[$module_script[0]]['item_name'][] = $module_script_item[1];
         }
     }
-    $users  = ($options[3] != -1) ? explode(',', $options[3]) : [];
+    $users  = (-1 != $options[3]) ? explode(',', $options[3]) : [];
     $groups = !empty($options[4]) ? explode(',', $options[4]) : [];
 
     $items          = $loglogObj->getViews($options[0], 0, $options[5], $options[6], $module, $options[2], $users, $groups);
@@ -84,7 +84,7 @@ function userlog_views_edit($options)
     // $form = new \XoopsBlockForm(); //reserve for 2.6
     $form = new \XoopsThemeForm(_AM_USERLOG_VIEW, 'views', '');
 
-    /** @var XoopsModuleHandler $moduleHandler */
+    /** @var \XoopsModuleHandler $moduleHandler */
     $moduleHandler = xoops_getHandler('module');
     $criteria      = new \CriteriaCompo();
     $criteria->add(new \Criteria('hasnotification', 1));
@@ -130,7 +130,7 @@ function userlog_views_edit($options)
     ++$i;
     $userRadioEle = new \XoopsFormRadio(_AM_USERLOG_UID, "options[{$i}]", $options[$i]);
     $userRadioEle->addOption(-1, _ALL);
-    $userRadioEle->addOption(($options[$i] != -1) ? $options[$i] : 0, _SELECT); // if no user in selection box it select uid=0 anon users
+    $userRadioEle->addOption((-1 != $options[$i]) ? $options[$i] : 0, _SELECT); // if no user in selection box it select uid=0 anon users
     $userRadioEle->setExtra("onchange=\"var el=document.getElementById('options[{$i}]'); el.disabled=(this.id == 'options[{$i}]1'); if (!el.value) {el.value= this.value}\""); // if user dont select any option it select "all"
     $userSelectEle = new \XoopsFormSelectUser(_AM_USERLOG_UID, "options[{$i}]", true, explode(',', $options[$i]), 3, true);
     $userEle       = new \XoopsFormLabel(_AM_USERLOG_UID, $userRadioEle->render() . $userSelectEle->render());
@@ -149,7 +149,7 @@ function userlog_views_edit($options)
                                  'count'        => _AM_USERLOG_VIEW,
                                  'module'       => _AM_USERLOG_MODULE,
                                  'module_name'  => _AM_USERLOG_MODULE_NAME,
-                                 'module_count' => _AM_USERLOG_VIEW_MODULE
+                                 'module_count' => _AM_USERLOG_VIEW_MODULE,
                              ]);
     $sortEle->setDescription(_AM_USERLOG_SORT_DSC);
 

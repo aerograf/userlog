@@ -18,7 +18,6 @@
  * @author          irmtfan (irmtfan@yahoo.com)
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
-
 require_once __DIR__ . '/admin_header.php';
 xoops_cp_header();
 

@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog;
+<?php
+
+namespace XoopsModules\Userlog;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -9,6 +11,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -22,8 +25,8 @@
 
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
-require_once __DIR__ . '/../include/common.php';
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
+require_once dirname(__DIR__) . '/include/common.php';
 
 xoops_loadLanguage('admin', USERLOG_DIRNAME);
 xoops_load('XoopsFormLoader');
@@ -38,8 +41,9 @@ class SettingHandler extends \XoopsPersistableObjectHandler
     /**
      * @param null|\XoopsDatabase $db
      */
-    public function __construct(\XoopsDatabase $db)
+    public function __construct(\XoopsDatabase $db = null)
     {
+        /** @var Userlog\Helper $this ->helper */
         $this->helper = Userlog\Helper::getInstance();
         parent::__construct($db, USERLOG_DIRNAME . '_set', Setting::class, 'set_id', 'logby');
     }

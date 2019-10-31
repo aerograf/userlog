@@ -8,6 +8,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -19,8 +20,10 @@
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
-require_once __DIR__ . '/../include/common.php';
+use XoopsModules\Userlog;
+
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
+require_once dirname(__DIR__) . '/include/common.php';
 
 if (defined('USERLOG_BLOCK_STATS_TYPE_DEFINED')) {
     return;
@@ -38,7 +41,7 @@ xoops_loadLanguage('admin', USERLOG_DIRNAME);
  */
 function userlog_stats_type_show($options)
 {
-    $queryObj = UserlogQuery::getInstance();
+    $queryObj = Userlog\Query::getInstance();
 
     return $queryObj->stats_typeShow($options);
 }
@@ -50,7 +53,7 @@ function userlog_stats_type_show($options)
  */
 function userlog_stats_type_edit($options)
 {
-    $queryObj = UserlogQuery::getInstance();
+    $queryObj = Userlog\Query::getInstance();
 
     return $queryObj->stats_typeForm($options);
 }

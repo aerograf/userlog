@@ -18,9 +18,8 @@
  * @author          irmtfan (irmtfan@yahoo.com)
  * @author          XOOPS Project <www.xoops.org> <www.xoops.ir>
  */
-
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
-require_once __DIR__ . '/../include/common.php';
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
+require_once dirname(__DIR__) . '/include/common.php';
 
 if (defined('USERLOG_BLOCK_LOGIN_REG_HISTORY_DEFINED')) {
     return;
@@ -41,7 +40,7 @@ xoops_loadLanguage('admin', USERLOG_DIRNAME);
  */
 function userlog_login_reg_history_show($options)
 {
-    $queryObj = UserlogQuery::getInstance();
+    $queryObj = \UserlogQuery::getInstance();
 
     return $queryObj->loginregHistoryShow($options);
 }
@@ -53,7 +52,7 @@ function userlog_login_reg_history_show($options)
  */
 function userlog_login_reg_history_edit($options)
 {
-    $queryObj = UserlogQuery::getInstance();
+    $queryObj = \UserlogQuery::getInstance();
 
     return $queryObj->loginregHistoryForm($options);
 }

@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog;
+<?php
+
+namespace XoopsModules\Userlog;
 
 /*
  You may not change or alter any portion of this comment or credits
@@ -9,6 +11,7 @@
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 /**
  *  userlog module
  *
@@ -22,8 +25,8 @@
 
 use XoopsModules\Userlog;
 
-defined('XOOPS_ROOT_PATH') || exit('Restricted access.');
-require_once __DIR__ . '/../include/common.php';
+defined('XOOPS_ROOT_PATH') || die('Restricted access');
+require_once dirname(__DIR__) . '/include/common.php';
 xoops_loadLanguage('admin', USERLOG_DIRNAME);
 
 /**
@@ -45,14 +48,12 @@ class Stats extends \XoopsObject
         'referral' => _AM_USERLOG_STATS_REFERRAL,
         'browser'  => _AM_USERLOG_STATS_BROWSER,
         'OS'       => _AM_USERLOG_STATS_OS,
-        'views'    => _AM_USERLOG_STATS_VIEWS
+        'views'    => _AM_USERLOG_STATS_VIEWS,
     ];
 
-    /**
-     *
-     */
     public function __construct()
     {
+        /** @var Userlog\Helper $this ->helper */
         $this->helper = Userlog\Helper::getInstance();
         $this->initVar('stats_id', XOBJ_DTYPE_INT, null, false);
         $this->initVar('stats_type', XOBJ_DTYPE_TXTBOX, null, false, 10);
@@ -95,6 +96,7 @@ class Stats extends \XoopsObject
     {
         return $this->helper->formatTime($this->getVar('time_update'));
     }
+
     // $type = null or array() => get all types
 
     /**
@@ -129,7 +131,7 @@ class Stats extends \XoopsObject
         $criteria->setLimit($limit);
         $criteria->setSort($sort);
         $criteria->setOrder($order);
-        $statsObj = $this->helper->getHandler('stats')->getAll($criteria);
+        $statsObj = $this->helper->getHandler('Stats')->getAll($criteria);
         if (empty($statsObj)) {
             return false;
         } // if no result nothing in database
@@ -165,7 +167,7 @@ class Stats extends \XoopsObject
         switch ($type) {
             case 'set':
                 // total
-                $sets = $this->helper->getHandler('setting')->getCount();
+                $sets = $this->helper->getHandler('Setting')->getCount();
                 $this->update('set', 0, $sets);
                 break;
             case 'file':
@@ -194,7 +196,7 @@ class Stats extends \XoopsObject
                         $since = $this->helper->getSinceTime($per);
                         $criteria->add(new \Criteria('log_time', time() - $since, '>'), 'AND');
                     }
-                    $logs   = $this->helper->getHandler('log')->getLogsCount($criteria);
+                    $logs   = $this->helper->getHandler('Log')->getLogsCount($criteria);
                     $exceed = $logs - $this->helper->getConfig('maxlogs');
                     // if logs exceed the maxlogs delete them
                     if ($exceed > 0) {
@@ -208,7 +210,7 @@ class Stats extends \XoopsObject
                 $criteria = new \CriteriaCompo();
                 $criteria->add(new \Criteria('referer', XOOPS_URL . '%', 'NOT LIKE'));
                 $criteria->setGroupBy('referer');
-                $outsideReferers = $this->helper->getHandler('log')->getCounts($criteria);
+                $outsideReferers = $this->helper->getHandler('Log')->getCounts($criteria);
                 $referrals       = [];
                 foreach ($outsideReferers as $ref => $views) {
                     if (empty($ref)) {
@@ -229,7 +231,7 @@ class Stats extends \XoopsObject
             case 'OS':
                 $criteria = new \CriteriaCompo();
                 $criteria->setGroupBy('user_agent');
-                $agents   = $this->helper->getHandler('log')->getCounts($criteria);
+                $agents   = $this->helper->getHandler('Log')->getCounts($criteria);
                 $browsers = [];
                 $OSes     = [];
                 foreach ($agents as $agent => $views) {
@@ -274,10 +276,10 @@ class Stats extends \XoopsObject
         switch ($type) {
             case 'log':
                 if ($asObject) {
-                    $logsObj = $this->helper->getHandler('log')->getLogs($limitDel, 0, $criteria, 'log_id', 'ASC');
+                    $logsObj = $this->helper->getHandler('Log')->getLogs($limitDel, 0, $criteria, 'log_id', 'ASC');
                     $numDel  = 0;
                     foreach (array_keys($logsObj) as $key) {
-                        $numDel += $this->helper->getHandler('log')->delete($logsObj[$key], true) ? 1 : 0;
+                        $numDel += $this->helper->getHandler('Log')->delete($logsObj[$key], true) ? 1 : 0;
                     }
                     if ($numDel > 0) {
                         $this->update('logdel', $period, $numDel, true); // increment
@@ -286,7 +288,7 @@ class Stats extends \XoopsObject
 
                     return $numDel;
                 }
-                $numDel = $this->helper->getHandler('log')->deleteAll($criteria, true, $asObject);
+                $numDel = $this->helper->getHandler('Log')->deleteAll($criteria, true, $asObject);
                 if ($numDel > 0) {
                     $this->update('logdel', $period, $numDel, true); // increment
                 }
@@ -319,7 +321,7 @@ class Stats extends \XoopsObject
         if (in_array($type, ['file', 'referral', 'browser', 'OS']) && empty($link)) {
             return false;
         }
-        $statsObj = $this->helper->getHandler('stats')->create();
+        $statsObj = $this->helper->getHandler('Stats')->create();
 
         $statsObj->setVar('stats_type', $type);
         $statsObj->setVar('stats_period', $period);
@@ -327,9 +329,9 @@ class Stats extends \XoopsObject
         $statsObj->setVar('stats_value', $value);
         $statsObj->setVar('time_update', time());
         // increment value if increment is true
-        $ret = $this->helper->getHandler('stats')->insertUpdate($statsObj, [
+        $ret = $this->helper->getHandler('Stats')->insertUpdate($statsObj, [
             'stats_value' => empty($increment) ? $value : "stats_value + {$value}",
-            'time_update' => time()
+            'time_update' => time(),
         ]);
         $this->unsetNew();
 
@@ -365,6 +367,6 @@ class Stats extends \XoopsObject
         $criteriaTime->add(new \Criteria('time_update', $until, '<'), 'AND');
         $criteriaDel->add($criteriaTime, 'AND');
 
-        return $this->helper->getHandler('stats')->deleteAll($criteriaDel); // function deleteAll($criteria = null, $force = true, $asObject = false)
+        return $this->helper->getHandler('Stats')->deleteAll($criteriaDel); // function deleteAll($criteria = null, $force = true, $asObject = false)
     }
 }

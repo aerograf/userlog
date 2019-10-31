@@ -1,4 +1,6 @@
-<?php namespace XoopsModules\Userlog\Plugin;
+<?php
+
+namespace XoopsModules\Userlog\Plugin;
 
 /*
  You may not change or alter any portion of this comment or credits

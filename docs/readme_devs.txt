@@ -215,7 +215,7 @@ in userlog/class/setting.php
         // check probability
         if(!$this->helper->probCheck($this->helper->getConfig("probset"))) return false;
         // database get All is better for performance???
-        $logsetsObj = $this->helper->getHandler('setting')->getAll();
+        $logsetsObj = $this->helper->getHandler('Setting')->getAll();
         if (empty($logsetsObj)) return false; // if not set in db return false
         $uid_unique_uid = "uid" . $unique_uid;
         foreach($unique_gid as $key=>$gid) {
